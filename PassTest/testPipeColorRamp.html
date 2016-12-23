@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
+    <title>Color Ramp</title>
+    <link rel="stylesheet" href="http://localhost/arcgis_js_api/library/3.14/3.14/esri/css/esri.css">
+    <link rel="stylesheet"  href="http://localhost/arcgis_js_api/library/3.14/3.14/dijit/themes/claro/claro.css">
+    <script src="http://localhost/arcgis_js_api/library/3.14/3.14/init.js" data-dojo-config="isDebug: 1, async: 1, parseOnLoad: 1" charset="utf-8"></script>
+    <style>
+        html, body, #map {
+            height: 100%;
+            margin: 0;
+        }
+        #info {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            padding: 10px;
+            background-color: #ddd;
+            font: 14px Segoe UI;
+            width: 200px;
+            text-align: center;
+            border-radius: 0 10px 0 0;
+        }
+    </style>
+
+</head>
+<body class="claro">
+<label>开始颜色:</label>
+<div id="btnStart" style="background-color: FFFFFF; border-color: black; border-width: 1px;" dojoType="dijit/form/DropDownButton">
+    <span id="colorText"><span id="colorSwatch" style="height: 10px; width: 18px; border: 1px solid black; background-color: black;">&nbsp;&nbsp;</span></span>
+    <div data-dojo-type="dijit/ColorPalette" id="startCp">
+    </div>
+</div>
+<label>结束颜色:</label>
+<div id="btnEnd" style="background-color: FFFFFF; border-color: black; border-width: 1px;" dojoType="dijit/form/DropDownButton">
+    <span id="colorText2"><span id="colorSwatch2" style="height: 10px; width: 18px; border: 1px solid black; background-color: black;">&nbsp;&nbsp;</span></span>
+    <div data-dojo-type="dijit/ColorPalette" id="endCp">
+    </div>
+</div>
+<button id="btnColorPipe">给管道着色</button>
+<div id="map"></div>
+<div id="info"><div id="legend"></div></div>
+<button id="btnTimeSlider">启动滑块</button>
+<div id="timeSliderDiv" onclick="initSlider"></div>
+<script>
+    require([
+        "dojo/parser",
+        "dojo/aspect",
+        "dojo/on",
+        "dojo/dom-style",
+        "dojo/dom",
+        "dijit/registry",
+        "dijit/ColorPalette",
+        "esri/map", "esri/geometry/Extent",
+        "esri/layers/ArcGISDynamicMapServiceLayer",
+        "esri/TimeExtent", "esri/dijit/TimeSlider",
+        "esri/layers/FeatureLayer", "esri/InfoTemplate", "esri/dijit/Legend",
+        "esri/renderers/SimpleRenderer", "esri/Color",
+        "esri/symbols/SimpleFillSymbol", "esri/symbols/SimpleLineSymbol",
+        "dojo/domReady!"
+    ], function(
+            parser,aspect,on,style,dom,registry,
+            ColorPalette,
+            Map, Extent,ArcGISDynamicMapServiceLayer,
+            TimeExtent,TimeSlider,
+            FeatureLayer, InfoTemplate, Legend,
+            SimpleRenderer, Color,
+            SimpleFillSymbol, SimpleLineSymbol
+    ) {
+        parser.parse();
+    //    var map = new Map("map",{  id: "hrbPipe", zoom:1, basemap: "streets"  });
+        var map = new Map("map",{  id: "hrbPipe", zoom:1 });
+        var layer = new FeatureLayer("http://10.50.51.67:6080/arcgis/rest/services/hrb/hrbPipe_2015/FeatureServer/5", {
+            outFields: ["*"],
+            infoTemplate: new InfoTemplate("${COUNTY}, ${STATE}", "<div style='font: 18px Segoe UI'>The percentage of the area of the county that represents farmland is <b>${M086_07:NumberFormat(places:0)}%</b>.</div>")
+        });
+
+        var sCp = registry.byId("startCp");
+        var eCp= registry.byId("endCp");
+        var legend = new Legend({
+            map: map,
+            layerInfos: [{ title: "testLayer", layer: layer }]
+        }, "legend");
+        var opLayer = new ArcGISDynamicMapServiceLayer("http://10.50.51.67:6080/arcgis/rest/services/hrb/hrbPipe_2015/MapServer");
+        map.addLayer(opLayer);
+        map.on("layers-add-result", initSlider);
+        layer.on("load", function(){
+            var symbol = new SimpleLineSymbol();
+            symbol.setWidth(1.75);
+          //  symbol.setColor(new Color([255, 255, 0, 1]));
+            var renderer = new   SimpleRenderer(symbol);
+            renderer.setColorInfo({
+                field: "INSTALLYEAR",
+                minDataValue: 2007,
+                maxDataValue: 2016,
+                colors: [
+                    new Color([255, 255, 255]),
+                    new Color([127, 127, 0])
+                ]
+            });
+            layer.setRenderer(renderer);
+            map.addLayer(layer);
+            legend.startup();
+        });
+        on(dom.byId("btnColorPipe"),"click",changeRamp);
+        aspect.after(sCp,"onChange",function(value ){
+            console.log(this.value);
+
+            //   dojo.style(registry.byId('colorSwatch'),{backgroundColor: cp.value});
+            // registry.popup.close(registry.byId("colorPaletteDialog"));
+            style.set(dom.byId('colorSwatch'),{backgroundColor: sCp.value});
+        });
+        aspect.after(eCp,"onChange",function(value ){
+            console.log(this.value);
+
+            //   dojo.style(registry.byId('colorSwatch'),{backgroundColor: cp.value});
+            // registry.popup.close(registry.byId("colorPaletteDialog"));
+            style.set(dom.byId('colorSwatch2'),{backgroundColor:eCp.value});
+        });
+        //设置管道颜色
+       function changeRamp(){
+        var symbol2 = new SimpleLineSymbol();
+           symbol2.setWidth(1.75);
+           var renderer2 = new   SimpleRenderer(symbol2);
+           renderer2.setColorInfo({
+               field: "INSTALLYEAR",
+               minDataValue: 2007,
+               maxDataValue: 2016,
+               colors: [ new Color(sCp.value),new Color(eCp.value)]
+
+           });
+           layer.setRenderer(renderer2);
+         layer.redraw();
+           legend.refresh();
+       };
+        //初始化时间滑块
+        function initSlider() {
+
+            var timeSlider = new TimeSlider({
+                style: "width: 100%;"
+            }, dom.byId("timeSliderDiv"));
+            map.setTimeSlider(timeSlider);
+            var timeExtent = new TimeExtent();
+            timeExtent.startTime = new Date('10/01/2006');
+            timeExtent.endTime = new Date('10/01/2016');
+            timeSlider.setThumbCount(2);
+            timeSlider.createTimeStopsByTimeInterval(timeExtent, 2, "esriTimeUnitsYears");
+            timeSlider.setThumbIndexes([0,1]);
+            timeSlider.setThumbMovingRate(2000);
+            timeSlider.startup();
+        };
+
+
+
+    });
+</script>
+</body>
+</html> 

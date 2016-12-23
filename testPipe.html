@@ -1,0 +1,49 @@
+
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Demo: Using _TemplatedMixin</title>
+
+    <link rel="stylesheet" href="http://localhost/arcgis_js_api/library/3.14/3.14/esri/css/esri.css">
+    <link rel="stylesheet"  href="http://localhost/arcgis_js_api/library/3.14/3.14/dijit/themes/claro/claro.css">
+</head>
+<body class="claro">
+<h1>Demo: Using _TemplatedMixin</h1>
+
+<script>
+    // See the using Custom Modules with a CDN Tutorial for more
+    // information on configuring Dojo for CDN usage
+    var dojoConfig = {
+        async: true,
+      //  dojoBlankHtmlUrl: location.pathname.replace(/\/[^/]+$/, "") + "/",
+         packages: [{
+            name: "demo",
+             location: "/test"
+        }]
+
+    };
+</script>
+<script src="http://localhost/arcgis_js_api/library/3.14/3.14/init.js" data-dojo-config="isDebug: 1, async: 1, parseOnLoad: 1" charset="utf-8"></script>
+<!--
+<script>
+    require([
+        "dojo/parser",
+        "demo/Substation1",
+        "dijit/form/Button", "dojo/domReady!"
+    ], function(parser,Substation1) {
+        //      parser.parse();
+      var tWidget=new Substation1();
+     //    tWidget.testFunc();
+
+        // Invoke the dojo/parser
+
+    });
+</script>
+-->
+ <div data-dojo-type="demo/Pipe" >测试</div>
+
+</body>
+
+
+</html>

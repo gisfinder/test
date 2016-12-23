@@ -1,0 +1,23 @@
+<div class="top">
+    <label>颜色配置</label>
+     <div data-dojo-attach-point="colorNode"></div>
+       <select data-dojo-type="dijit/form/FilteringSelect" data-dojo-attach-event="onChange:_nChange"   id="fruit" name="fruit" style="width: 150px"  data-dojo-attach-point="identifyLayerDijit">
+    </select>
+    <button data-dojo-type="dijit/form/Button" data-dojo-attach-point="dijiButton" data-dojo-attach-event="onClick:_sOnClick">
+     go
+    </button>
+    <br>
+    <label>代码</label>
+    <select data-dojo-type="dijit/form/FilteringSelect" id="substation" style="width: 150px;" name="station" data-dojo-attach-point="selByCode">
+        <option value="101">101</option>
+        <option value="303">303</option>
+    </select>
+    <button data-dojo-type="dijit/form/Button" data-dojo-attach-point="locateCode"
+            data-dojo-attach-event="onClick:_cOnClick">
+        go
+    </button>
+    <br>
+    <label>测试esri/dijit/Search</label>
+    <div data-dojo-attach-point="searchNode"></div>
+    <label>共有:</label><label id="labelCount" data-dojo-attach-point="stationNumber"></label><label>个换热站</label>
+</div>

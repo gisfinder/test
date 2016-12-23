@@ -1,0 +1,88 @@
+.myInfoWindow {
+  width:70px;
+  height:85px;
+  position: absolute;
+  z-index: 100;
+  border-radius: 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px; -o-border-radius: 5px;
+  -moz-box-shadow: 0 0 1em #26393D;
+  border: 2px solid #046380;
+  font-family: sans-serif;
+  font-size: 12px;
+  background-color:#EFECCA;
+}
+
+.dj_ie .myInfoWindow {
+  border: 1px solid black;
+}
+
+.myInfoWindow .content {
+  position: relative;
+  background-color:#EFECCA;
+  color:#002F2F;
+  overflow: auto;
+  padding:2px 2px 2px 2px;
+}
+
+
+
+.myInfoWindow .close:hover, .myInfoWindow .primary:hover , .myInfoWindow .secondary:hover  {
+  background-color: #F7FCFF;
+}
+
+.myInfoWindow .primary {
+  position: absolute; top: 2px; right: 10px;
+  cursor: pointer;
+  background: url(http://localhost/arcgis_js_api/library/3.14/3.14/dijit/themes/claro/form/images/buttonArrows.png);
+  background-position: -26px 53%;
+  background-repeat: no-repeat;
+  width: 10px; height: 10px;
+  margin: 1px 1px 0px 0px;
+}
+
+.myInfoWindow .secondary{
+  position: absolute; top: 2px; right: 0px;
+  cursor: pointer;
+  background: url(http://localhost/arcgis_js_api/library/3.14/3.14/dijit/themes/claro/form/images/buttonArrows.png);
+  background-position: -79px 53%;
+  background-repeat: no-repeat;
+  title:"Ò»´Î";
+  width: 10px; height: 10px;
+  margin: 1px 1px 0px 0px;
+}
+
+.myInfoWindow .title {
+  font-weight: bold;
+  overflow:hidden;
+  padding: 2px 2px 2px 2px;
+  background-color: #6495ED;
+  color:#E6E2AF;
+}
+.myInfoWindow .pointerLeft{
+  position: absolute;
+  top:0px;
+   left:-5px;
+  width: 16px;
+  height: 10px;
+   background-image: url("../../images/t3.png");
+}
+.myInfoWindow .scadaTip	{
+  border-bottom:1px dotted blue;
+  cursor:pointer;
+  padding:2px;
+  display:inline-block;
+  font:italic bold 10px arial,sans-serif;
+}
+
+  .left{
+    float:left;
+    font-family: sans-serif;
+    font-size: 11px;
+  }
+  .right{margin-left:10px;
+    font-family: sans-serif;
+    font-size: 11px;}
+  .tpDialog{
+    position: absolute;
+    font-family: sans-serif;
+    font-size: 11px;
+  }

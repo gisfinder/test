@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no">
+    <title>Convex Hull</title>
+
+    <link rel="stylesheet" href="http://localhost/arcgis_js_api/library/3.14/3.14/esri/css/esri.css">
+    <link rel="stylesheet"  href="http://localhost/arcgis_js_api/library/3.14/3.14/dijit/themes/claro/claro.css">
+    <style>
+        html, body { height: 100%; width: 100%; margin: 0; padding: 0; }
+        #mapu { padding:0; }
+        #titlePane {
+            width:200px;
+            height:300px;
+        }
+        .claro .dijitTitlePaneTitle {
+            background: #A4BDA7;
+            font-weight:600;
+            color:#33292B;
+        }
+        .dijitButtonNode {
+            background-color: #A4BDA7 !important;
+            border: 1px solid #646750 !important;
+            color:#33292B !important;
+        }
+    </style>
+
+    <script>var dojoConfig = {parseOnLoad: true};</script>
+    <script src="http://localhost/arcgis_js_api/library/3.14/3.14/init.js" data-dojo-config="isDebug: 1, async: 1, parseOnLoad: 1" charset="utf-8"></script>
+    <script>
+        var toolbar;
+        require(["dojo/parser",
+                        "dojo/dom",
+                    "dojo/_base/array",
+                    "dojo/on",
+                        "dojo/_base/array",
+                    "dojo/_base/Color",
+                    "esri/SpatialReference",
+                        "esri/tasks/GeometryService",
+                    "esri/map",
+                       "esri/tasks/query",
+                    "esri/symbols/SimpleMarkerSymbol",
+                        "esri/symbols/SimpleLineSymbol",
+                    "esri/symbols/LineSymbol",
+            "esri/layers/FeatureLayer",
+                    "esri/layers/ArcGISDynamicMapServiceLayer",
+            "esri/toolbars/draw",
+            "dojo/domReady!"],
+                function(parser,dom,array,on,array,Color,SpatialReference,GeometryService,map,Query,SimpleMarkerSymbol,SimpleLineSymbol,LineSymbol,FeatureLayer,ArcGISDynamicMapServiceLayer,Draw) {
+                    //     parser.parse();
+                    var map,query;
+
+                    var geometryService;
+                    var featureLayer;
+                    var dynamicLayer;
+                    var pipeSurfaceArea=0;
+                    var pipeVolume=0;
+                    var drawButton = dom.byId("btnDraw");
+                    on(drawButton, "click", startSelect);
+                    //This service is for development and testing purposes only. We recommend that you create your own geometry service for use within your applications
+                    //      esri.config.defaults.io.proxyUrl = "/proxy/";
+                    //      esri.config.defaults.io.alwaysUseProxy = false;
+                    //      geometryService = new GeometryService("http://10.50.51.67:6080/arcgis/rest/services/Utilities/Geometry/GeometryServer");
+
+                    map = new map("map", {
+                   basemap: "streets",
+                        center: [126.62, 45.69],
+                        zoom: 12
+                    });
+                    map.on("load", initSelectToolbar);
+                    //add the census block points to the map
+                    featureLayer = new FeatureLayer("http://10.50.51.67:6080/arcgis/rest/services/hrb/hrbPipe_2015/MapServer/5", {
+                        mode: FeatureLayer.MODE_ONDEMAND,
+                        outFields: ['*']
+                    });
+                    var selSymbol=
+                    new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID,
+                            new Color([0, 0, 255]), 2);
+
+                    featureLayer.setSelectionSymbol(selSymbol);
+                //    featureLayer.setDefinitionExpression("NOMINAL_DIAM is not null or NOMINAL_DIAM<2000");
+                    //      dynamicLayer=new ArcGISDynamicMapServiceLayer("http://10.50.51.67:6080/arcgis/rest/services/hrb/hrbPipe_2015/MapServer");
+                    featureLayer.on("selection-complete", selectComplete);
+                    map.addLayer(featureLayer);
+                    //define a selection symbol for the feature layer
+              //      var symbol = new SimpleMarkerSymbol(esri.symbol.SimpleMarkerSymbol.STYLE_SQUARE, 12, new esri.symbol.SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_SOLID, new Color([247, 0, 171, 0.9]), 2), new Color([247, 0, 171, 0.5]));
+             //       featureLayer.setSelectionSymbol(symbol);
+
+                    map.infoWindow.resize(175, 100);
+                //
+                    //           map.addLayer(dynamicLayer);
+                    toolbar = new Draw(map);
+                    var drawSymbol=new SimpleLineSymbol(new Color([255,255,0],1));
+                    //    Draw.setLineSymbol(drawSymbol);
+                    toolbar.setLineSymbol(drawSymbol);
+                    function initSelectToolbar(event) {
+
+
+                        var query = new Query();
+                        on(toolbar, "DrawEnd", function (geometry) {
+                            toolbar.deactivate();
+                            featureLayer.clearSelection();
+                            pipeSurfaceArea=0;
+                            pipeVolume=0;
+                            query.geometry = geometry;
+                            featureLayer.selectFeatures(query,
+                                    FeatureLayer.SELECTION_NEW);
+                        });
+                    };
+
+
+
+                    function startSelect(){
+
+                        toolbar.activate(Draw.POLYGON);
+
+                    }
+
+
+                    function selectComplete(event){
+                                   //calculate the convex hull
+                        var diam=[];
+                        var pLength=[];
+                        var i=0;
+                      array.forEach(event.features,function(feature)
+                      {
+                          diam[i]=feature.attributes.NOMINAL_DIAM;
+                          if(diam[i]!=null)
+                          {
+                              pLength[i]=feature.attributes["SHAPE.len"];
+                              pipeSurfaceArea=pipeSurfaceArea+3.14*diam[i]/1000*pLength[i];
+                              pipeVolume=pipeVolume+3.14* diam[i]/4000000*diam[i]*pLength[i];
+                              console.log("Area:"+pipeSurfaceArea.toLocaleString()+" volume:"+pipeVolume.toLocaleString());
+                          }
+                          i=i+1;
+
+                      });
+                        dojo.byId("sArea").innerHTML=pipeSurfaceArea.toLocaleString()+" 平米";
+                        dojo.byId("volume").innerHTML=pipeVolume.toLocaleString()+" 吨";
+
+                        /*
+                            var points = array.map(event.features, function (feature) {
+                                return event.feature.geometry;
+                            });
+                            switch (points.type) {
+                                case "point":
+                                    symbol = new esri.symbol.SimpleMarkerSymbol();
+                                    break;
+                                case "polyline":
+                                    symbol = new esri.symbol.SimpleLineSymbol();
+                                    break;
+                                case "polygon":
+                                    symbol = new esri.symbol.SimpleFillSymbol();
+                                    break;
+                            }
+                            map.graphics.add(new esri.Graphic(points, symbol));
+                            */
+                     };
+                    function errCallBack(err){
+                        console.log(err.toLocaleString());
+                    };
+                    function drawEndHandler(geometry) {
+                        toolbar.deactivate();
+                        featureLayer.clearSelection();
+
+                        //select the points within the extent
+
+                 //       query.returnGeometry=true;
+                     //   query.outSpatialReference=map.outSpatialReference;
+                  query.outSpatialReference=new SpatialReference(102100);
+           //     geometry.spatialReference=new SpatialReference(102100);
+                        query.geometry = geometry;
+                        featureLayer.selectFeatures(query,FeatureLayer.SELECTION_NEW);
+                    };
+                });
+
+    </script>
+</head>
+
+
+
+
+<body class="claro">
+<div data-dojo-type="dijit/layout/BorderContainer"   data-dojo-props="gutters:'false',design:'headline'" style="width: 100%; height: 100%;">
+   <div id="map" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'center'"  style="overflow:hidden;">
+           <div style="position:absolute; right:20px; top:10px; z-Index:999;">
+              <div id="titlePane" data-dojo-type="dijit/TitlePane" data-dojo-props="title:'Convex Hull', closable:'false', open:'true'">
+                  <p style="padding:5px 2px;color:#33292B;">Draw a rectangle around a group of block points to calculate the
+                      minimum bounding polygon ("convex hull") of the selected points.</p>
+                  <button  id="btnDraw">Draw</button>
+                  <br>
+                  <label>表面积:</label><label id="sArea"></label><label> 体积:</label><label id="volume"></label>
+              </div>
+          </div>
+
+      </div>
+
+</div>
+</body>
+</html>

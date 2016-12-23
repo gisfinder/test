@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title></title>
+    <link rel="stylesheet"  href="http://localhost/arcgis_js_api/library/3.14/3.14/esri/css/esri.css">
+    <style>
+        html, body, #map {
+            height: 100%; width: 100%; margin: 0; padding: 0;
+        }
+    </style>
+
+    <script src="http://localhost/arcgis_js_api/library/3.14/3.14/init.js" data-dojo-config="isDebug: 1, async: 1, parseOnLoad: 1"></script>
+    <script>
+        var map;
+
+        require(["esri/map", "esri/layers/ArcGISTiledMapServiceLayer","esri/layers/ArcGISTiledMapServiceLayer","esri/layers/ImageParameters","dojo/domReady!"],
+                function(Map, Tiled,ArcGISDynamicMapServiceLayer,ImageParameters) {
+                    var pipeLayerUrl="http://10.50.51.67:6080/arcgis/rest/services/hrb/hrbPipe_2015/MapServer";
+
+                    map = new Map("map", {
+                        sliderOrientation : "horizontal"
+                    });
+                    var imageParameters = new ImageParameters();
+                    imageParameters.format = "jpeg";
+                //    var pipeLayer = new ArcGISDynamicMapServiceLayer(pipeLayerUrl,{ "opacity": 0.5,"imageParameters":imageParameters});
+                    var pipeLayer = new ArcGISDynamicMapServiceLayer(pipeLayerUrl);
+                    var tiled = new Tiled("http://10.50.51.67:6080/arcgis/rest/services/hrb/hrbBackground2015/MapServer");
+               map.addLayer(pipeLayer);
+                //    map.addLayer(tiled);
+
+                }
+        );
+    </script>
+</head>
+<body>
+<div id="map"></div>
+</body>
+</html>
+ 

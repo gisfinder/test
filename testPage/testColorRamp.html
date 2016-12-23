@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
+    <title>Color Ramp</title>
+    <link rel="stylesheet" href="https://js.arcgis.com/3.16/esri/css/esri.css">
+    <style>
+        html, body, #map {
+            height: 100%;
+            margin: 0;
+        }
+        #info {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            padding: 10px;
+            background-color: #ddd;
+            font: 14px Segoe UI;
+            width: 200px;
+            text-align: center;
+            border-radius: 0 10px 0 0;
+        }
+    </style>
+    <script src="https://js.arcgis.com/3.16/"></script>
+    <script>
+        require([
+            "esri/map", "esri/geometry/Extent",
+            "esri/layers/FeatureLayer", "esri/InfoTemplate", "esri/dijit/Legend",
+            "esri/renderers/SimpleRenderer", "esri/Color",
+            "esri/symbols/SimpleFillSymbol", "esri/symbols/SimpleLineSymbol",
+            "dojo/domReady!"
+        ], function(
+                Map, Extent,
+                FeatureLayer, InfoTemplate, Legend,
+                SimpleRenderer, Color,
+                SimpleFillSymbol, SimpleLineSymbol
+        ) {
+            var map = new Map("map",{  id: "hrbPipe", zoom:1, basemap: "topo"  });
+
+            var layer = new FeatureLayer("http://10.50.51.67:6080/arcgis/rest/services/hrb/hrbPipe_2015/FeatureServer/5", {
+                outFields: ["*"],
+                infoTemplate: new InfoTemplate("${COUNTY}, ${STATE}", "<div style='font: 18px Segoe UI'>The percentage of the area of the county that represents farmland is <b>${M086_07:NumberFormat(places:0)}%</b>.</div>")
+            });
+
+            var legend = new Legend({
+                map: map,
+                layerInfos: [{ title: "Percentage of county area used for farming", layer: layer }]
+            }, "legend");
+
+            layer.on("load", function(){
+                var symbol = new SimpleLineSymbol();
+                symbol.setWidth(1.75);
+                symbol.setColor(new Color([255, 255, 0, 1]));
+                var renderer = new   SimpleRenderer(symbol);
+                renderer.setColorInfo({
+                    field: "INSTALLYEAR",
+                    minDataValue: 2007,
+                    maxDataValue: 2016,
+                    colors: [
+                        new Color([255, 255, 255]),
+                        new Color([127, 127, 0])
+                    ]
+                });
+                layer.setRenderer(renderer);
+                map.addLayer(layer);
+                legend.startup();
+            });
+        });
+    </script>
+</head>
+<body>
+<div id="map"></div>
+<div id="info"><div id="legend"></div></div>
+</body>
+</html> 

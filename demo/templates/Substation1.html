@@ -1,0 +1,14 @@
+<div  >
+    <div class=" Title" data-dojo-attach-point="titleNode" data-dojo-attach-event="ondijitclick:_onClick"></div>
+    <div>And our container:</div>
+    <button data-dojo-attach-event="onclick:_btnOnClick">testButton</button>
+    <button data-dojo-type="dijit/form/Button" data-dojo-attach-point="dijiButton" data-dojo-attach-event="onClick:_sOnClick">
+        test
+    </button>
+    <select data-dojo-type="dijit/form/FilteringSelect" id="fruit" name="fruit"   data-dojo-attach-point="identifyLayerDijit">
+        <option value="AP">Apples</option>
+        <option value="OR" selected>Oranges</option>
+        <option value="PE" >Pears</option>
+    </select>
+    <div class="${baseClass}Container" data-dojo-attach-point="containerNode"></div>
+</div>

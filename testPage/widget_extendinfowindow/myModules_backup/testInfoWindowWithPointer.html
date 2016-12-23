@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DExtra-BubublPoopup</title>
+    <link rel="stylesheet" href="http://localhost/arcgis_js_api_v318/arcgis_js_v318_api/arcgis_js_api/library/3.18/3.18/dojox/image/resources/image.css">
+    <link rel="stylesheet" href="http://localhost/arcgis_js_api_v318/arcgis_js_v318_api/arcgis_js_api/library/3.18/3.18/esri/css/esri.css">
+    <link rel="stylesheet"  href="http://localhost/arcgis_js_api_v318/arcgis_js_v318_api/arcgis_js_api/library/3.18/3.18/dijit/themes/claro/claro.css">
+
+    <link rel="stylesheet" href="/templates/dextraPopup.css">
+
+    <script>
+        var dojoConfig = {
+            parseOnLoad:true,
+            packages: [{
+                name: 'custom',
+                location: location.pathname.replace(/\/[^/]+$/, '') + '/templates'//从cdn加载自己定义的模块方法
+            }]
+        };
+    </script>
+    <script>var dojoConfig = { parseOnLoad: true };</script>
+    <script src="http://localhost/arcgis_js_api/library/3.14/3.14/init.js" data-dojo-config="isDebug: 1, async: 1, parseOnLoad: 1" charset="utf-8"></script>
+
+    <script>
+        require([
+                    "dojo/dom",
+                    "dojo/on",
+                    "esri/map",
+                    "esri/graphic",
+                    "esri/symbols/SimpleMarkerSymbol",
+                    "esri/InfoTemplate",
+
+                    "esri/layers/GraphicsLayer",
+                     "custom/InfoWindow",
+                    "dojo/domReady!"],
+                function (dom, on,
+                          Map,  Graphic, SimpleMarkerSymbol, InfoTemplate,   GraphicsLayer,
+                          InfoWindow) {
+
+                    var infoWindow = new  InfoWindow();
+                    var map = new Map("map", {
+                        showAttribution: false,
+                        center: [102.3, 24.6],
+                        autoResize: true,
+                        sliderPosition: "bottom-right",
+                        logo: false,
+                        infoWindow:infoWindow,
+                        zoom:12
+                    });
+
+          //          var googleVect = new GoogleVectorLayer();
+          //                     map.addLayer(googleVect);
+               //     map.addLayer(googleVect);
+
+                    var measureLayer = new GraphicsLayer({id: "infoWindowTest"});
+                    map.addLayer(measureLayer);
+                    on(dom.byId("infowindow"), "click", function (e) {
+                        on.once(map, "click", function (evt) {
+                            console.log(map._container);
+                            var sms = new SimpleMarkerSymbol({
+                                "color": [255, 0, 0],
+                                "size": 12,
+                                "xoffset": 0,
+                                "yoffset": 0,
+                                "type": "esriSMS",
+                                "style": "esriSMSCircle",
+                                "outline": {
+                                    "color": [0, 0, 0, 255],
+                                    "width": 1,
+                                    "type": "esriSLS",
+                                    "style": "esriSLSSolid"
+                                }
+                            });
+
+                            var point = map.toMap(evt.screenPoint);
+                            var attr = {"Xcoord": point.x, "Ycoord": point.y, "Plant": "Mesa Mint"};
+                            var infoTemplate = new InfoTemplate("Locations", "Latitude: ${Ycoord} Longitude: ${Xcoord}Plant Name:${Plant}");
+                            var graphic=new Graphic(point, sms,attr,infoTemplate);
+                            measureLayer.add(graphic);
+                        });
+                    });
+                });
+    </script>
+    <style>
+        #measureTools {
+            position: absolute;
+            top: 50px;
+            left: 50px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+<div id="measureTools">
+    <button id="infowindow">弹出框</button>
+</div>
+
+<div id="map" ></div>
+</body>
+</html>

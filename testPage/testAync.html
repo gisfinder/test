@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html >
+<head>
+ <link rel="stylesheet"  href="http://localhost/arcgis_js_api/library/3.14/3.14/dijit/themes/claro/claro.css">
+    <script src="http://localhost/arcgis_js_api/library/3.14/3.14/init.js" data-dojo-config="isDebug: 1, async: 1, parseOnLoad: 1" charset="utf-8"></script>
+
+    <script>
+        require(["dojo/promise/all", "dojo/Deferred", "dojo/dom", "dojo/on", "dojo/json", "dojo/domReady!"],
+                function(all, Deferred, dom, on, JSON){
+
+                    function googleRequest(){
+                        var deferred = new Deferred();
+                        setTimeout(function(){
+                            deferred.resolve("foo");
+                        }, 500);
+                        return deferred.promise;
+                    }
+
+                    function bingRequest(){
+                        var deferred = new Deferred();
+                        setTimeout(function(){
+                            deferred.resolve("bar");
+                        }, 750);
+                        return deferred.promise;
+                    }
+
+                    function baiduRequest(){
+                        var deferred = new Deferred();
+                        setTimeout(function(){
+                            deferred.resolve("baz");
+                        }, 1000);
+                        return deferred.promise;
+                    }
+
+                    on(dom.byId("startButton"), "click", function(){
+                        dom.byId("output").innerHTML = "Running...";
+                        all([googleRequest(), bingRequest(), baiduRequest()]).then(function(results){
+                            dom.byId("output").innerHTML = JSON.stringify(results);
+                        });
+                    });
+
+                });
+    </script>
+</head>
+<body class="claro">
+<h1>Output:</h1>
+<pre id="output"></pre>
+<button type="button" id="startButton">Start</button>
+</body>
+</html>

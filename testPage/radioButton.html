@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html >
+<head>
+    <link rel="stylesheet"  href="http://localhost/arcgis_js_api/library/3.14/3.14/dijit/themes/claro/claro.css">
+     <style>
+       .left{float:left;}
+       .right{margin-left:100px;}
+
+     </style>
+    <script>dojoConfig = {parseOnLoad: true}</script>
+    <script src="http://localhost/arcgis_js_api/library/3.14/3.14/init.js" data-dojo-config="isDebug: 1, async: 1, parseOnLoad: 1" charset="utf-8"></script>
+
+    <script>
+        require([
+            "dojo/parser",
+            "dijit/form/RadioButton",
+            "dijit/form/Button", // used for example purpose
+            "dojo/domReady!"
+        ], function(parser, RadioButton){
+            parser.parse();
+            var radioOne = new RadioButton({
+                checked: true,
+                value: "tea",
+                name: "drink",
+            }, "radioOne").startup();
+        });
+    </script>
+</head>
+<body class="claro">
+<div class="left">
+
+    <input type="radio" name="drink" id="radioOne" checked value="tea"/> <label for="radioOne">Tea</label> <br />
+    <input type="radio" data-dojo-type="dijit/form/RadioButton" name="drink" id="radioTwo" value="coffee"/> <label for="radioTwo">Coffee</label> <br />
+
+    <button data-dojo-type="dijit/form/Button" type="button">
+        Show form submit value
+        <script type="dojo/on" data-dojo-event="click">
+            require(["dojo/dom"], function(dom){
+                 with(dom.byId('myform'))with(elements[0])with(elements[checked?0:1])alert(name+'='+value);
+                 return false;
+            });
+        </script>
+    </button>
+
+</div>
+<div class="right">tttt</div>
+</body>
+</html>

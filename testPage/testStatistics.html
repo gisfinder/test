@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no">
+    <title></title>
+    <link rel="stylesheet" href="https://js.arcgis.com/3.16/dijit/themes/tundra/tundra.css">
+    <link rel="stylesheet" href="https://js.arcgis.com/3.16/esri/css/esri.css">
+
+    <style>
+        html, body { height: 100%; width: 100%; margin: 0; padding: 0; }
+        #map{ margin: 0; padding: 0; }
+        #feedback {
+            position: absolute;
+            height: 330px;
+            font-family: arial;
+            margin: 5px;
+            padding: 5px;
+            z-index: 40;
+            background: #fff;
+            color: #444;
+            width: 300px;
+            right: 30px;
+            bottom: 30px;
+            -moz-box-shadow: 0 0 5px #888;
+            -webkit-box-shadow: 0 0 5px #888;
+            box-shadow: 0 0 5px #888;
+        }
+        #county {
+            padding: 5px 0 0 0;
+            font-weight: 700;
+        }
+        h3 { margin: 0 0 5px 0; border-bottom: 1px solid #444; }
+    </style>
+
+    <script>var dojoConfig = { parseOnLoad: true };</script>
+    <script src="https://js.arcgis.com/3.16/"></script>
+    <script>
+        dojo.require("dijit.layout.BorderContainer");
+        dojo.require("dijit.layout.ContentPane");
+        dojo.require("dojox.widget.AnalogGauge");
+        dojo.require("dojox.widget.gauge.AnalogArcIndicator");
+        dojo.require("esri.map");
+        dojo.require("esri.tasks.query");
+        dojo.require("esri.layers.ArcGISDynamicMapServiceLayer");
+
+        var app = {};
+        app.abbrLookup = { "Maine": "ME", "Vermont": "VT", "New Hampshire": "NH", "Connecticut": "CT", "Massachusetts": "MA", "Rhode Island": "RI" };
+        function init() {
+            app.map = new esri.Map("map", {
+                basemap: "oceans",
+                center: [-70.324, 44.256],
+                zoom: 7
+            });
+
+            var countiesUrl = "http://10.50.51.67:6080/arcgis/rest/services/hrb/hrbPipe_2015/MapServer/8";
+            var stateList = "'Maine', 'New Hampshire', 'Vermont', 'Connecticut', 'Massachusetts', 'Rhode Island'";
+            var newEnglandDef = dojo.string.substitute("STATE_NAME IN (${0})", [stateList]);
+            newEnglandDef="1=1";
+            var outFields = ["POP2007", "STATE_NAME", "NAME"];
+            outFields=["*"];
+            var outline = new esri.symbol.SimpleLineSymbol()
+                    .setColor(dojo.colorFromHex("#fff"));
+            app.sym = new esri.symbol.SimpleFillSymbol()
+                    .setColor(new dojo.Color([52, 67, 83, 0.4]))
+                    .setOutline(outline);
+            var renderer = new esri.renderer.SimpleRenderer(app.sym);
+
+            var hColor = dojo.colorFromHex("#ff3");
+            var hOutline = new esri.symbol.SimpleLineSymbol()
+                    .setColor(hColor).setWidth(4);
+            app.highlight = new esri.symbol.SimpleFillSymbol()
+                    .setColor(new dojo.Color([0, 0, 0, 0]))
+                    .setOutline(hOutline);
+
+            // use new 10.1 query statistic definition to find
+            // the value for the most populous county in New England
+            var popQueryTask = new esri.tasks.QueryTask(countiesUrl);
+            var popQuery = new esri.tasks.Query();
+            var statDef = new esri.tasks.StatisticDefinition();
+            statDef.statisticType = "count";
+            statDef.onStatisticField = "REFCOD";
+            statDef.outStatisticFieldName = "totalNumber";
+
+            popQuery.returnGeometry = false;
+            popQuery.where = newEnglandDef;
+            popQuery.outFields = outFields;
+            popQuery.outStatistics = [ statDef ];
+            popQueryTask.execute(popQuery, handlePopQuery);
+
+            // create a feature layer for counties in New England
+            app.neCounties = new esri.layers.FeatureLayer(countiesUrl);
+            // set a definition expression so only counties in New England are shown
+            app.neCounties.setDefinitionExpression(newEnglandDef);
+       //     app.neCounties.setRenderer(renderer);
+
+        //    dojo.connect(app.neCounties, "onMouseOver", showInfo);
+
+       //     app.map.addLayer(app.neCounties);
+
+            // create the gauge
+        //    createGauge(dojo.byId("gauge"), 0);
+        }
+
+        function showInfo(evt) {
+            app.map.graphics.clear();
+            app.map.graphics.add(
+                    new esri.Graphic(
+                            evt.graphic.geometry,
+                            app.highlight
+                    )
+            );
+       //     updateGauge(evt.graphic);
+        }
+
+
+
+
+
+        function handlePopQuery(result) {
+         //   console.log('pop query...', result);
+            console.log('total number='+result.features[0].attributes.totalNumber);
+     //       app.maxPop = result.features[0].attributes.maxPop;
+        }
+
+        dojo.ready(init);
+    </script>
+</head>
+
+<body class="tundra">
+<div data-dojo-type="dijit.layout.BorderContainer"
+     data-dojo-props="design:'headline',gutters:false"
+     style="width: 100%; height: 100%; margin: 0;">
+    <div id="map"
+         data-dojo-type="dijit.layout.ContentPane"
+         data-dojo-props="region:'center'">
+
+        <div id="feedback">
+            <h3>County Info</h3>
+            <div id="info">
+                Mouse over to see how a particular county's population compares to the most populous county in New England (Middlesex, MA).
+            </div>
+            <div id="county">...county name here...</div>
+            <div id="gauge" style="position:absolute; width: 290px; height: 230px;"></div>
+
+        </div>
+    </div>
+</div>
+</body>
+</html>

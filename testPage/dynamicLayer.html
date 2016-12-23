@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no">
+    <title>Create Map and add a dynamic layer</title>
+    <link rel="stylesheet" href="https://js.arcgis.com/3.16/esri/css/esri.css"/>
+    <style>
+        html, body, #mapDiv{
+            padding: 0;
+            margin: 0;
+            height: 100%;
+        }
+    </style>
+    <script src="https://js.arcgis.com/3.16/"></script>
+    <script>
+        var map;
+
+        require([
+            "esri/map",
+            "esri/config",
+            "esri/layers/FeatureLayer",
+            "esri/dijit/Search",
+            "esri/InfoTemplate",
+            "esri/layers/ArcGISTiledMapServiceLayer",
+            "esri/layers/ArcGISDynamicMapServiceLayer",
+            "esri/layers/ImageParameters",   "dojo/domReady!"
+        ], function (
+                Map,esriConfig,FeatureLayer, Search, InfoTemplate, Tiled,ArcGISDynamicMapServiceLayer, ImageParameters) {
+            esriConfig.defaults.geometryService = "http://10.50.51.67:6080/arcgis/rest/services/Utilities/Geometry/GeometryServer";
+            map = new Map("mapDiv", {
+                sliderOrientation : "horizontal"
+            });
+
+            var imageParameters = new ImageParameters();
+            imageParameters.format = "jpeg"; //set the image type to PNG24, note default is PNG8.
+
+            //Takes a URL to a non cached map service.
+            var dynamicMapServiceLayer = new ArcGISDynamicMapServiceLayer("http://10.50.51.67:6080/arcgis/rest/services/hrb/hrbPipe_2015/MapServer", {
+                "opacity" :1,
+                "imageParameters" : imageParameters
+            });
+            var tiled = new Tiled("http://10.50.51.67:6080/arcgis/rest/services/hrb/hrbBackground2015/MapServer");
+            map.addLayer(tiled);
+            map.addLayer(dynamicMapServiceLayer);
+            var layer = new FeatureLayer("http://10.50.51.67:6080/arcgis/rest/services/china/chinaMap/FeatureServer", {
+                outFields: ["*"]
+            });
+        map.addLayer(layer);
+
+            //Create search widget
+            var search = new Search({
+                map: map,
+                //passing in empty source array to clear defaults such as
+                //"All" and the ArcGIS Online World Geocoding service
+                sources: [],
+                zoomScale: 5000000
+            }, "search");
+
+            //listen for the load event and set the source properties
+            search.on("load", function () {
+
+                var sources = {
+                    featureLayer: layer,
+                    placeholder: "Spain",
+                    enableLabel: false,
+                    searchFields: ["NAME"],
+                    displayField: "NAME",
+                    exactMatch: false,
+                    outFields: ["*"],
+                };
+                //Set the sources above to the search widget
+                search.set("sources", sources);
+            });
+            search.startup();
+        });
+    </script>
+</head>
+<body>
+<div id="search"></div>
+<div id="info">
+    <div>Search a country to find its ecological footprint and rating.</div>
+</div>
+<div id="mapDiv"></div>
+
+</body>
+</html>
+ 

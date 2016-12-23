@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+
+    <title>模块与包</title>
+
+
+    <link rel="stylesheet"  href="http://localhost/arcgis_js_api/library/3.14/3.14/dijit/themes/claro/claro.css">
+    <script>
+        var dojoConfig = {
+            // baseUrl: "js/",
+            packages: [{
+                name: "app",
+                location: "/test"
+            }]
+
+        };
+    </script>
+    <!-- <script type="text/javascript"  data-dojo-config="async: true"   src="http://localhost/arcgis_js_api/library/3.14/3.14/init.js"></script>  -->
+
+
+</head>
+<body class="tundra">
+<script src="http://localhost/arcgis_js_api/library/3.14/3.14/init.js" data-dojo-config="isDebug: 1, async: 1, parseOnLoad: 1"></script>
+
+
+
+<script>
+    require([ "dojo/parser","app/js/Test2", "dojo/ready"], function ( parser,Test2,ready) {
+        ready(300,function() {
+           alert(  Test2.url);
+
+        });
+
+
+    });
+</script>
+
+</body>
+</html>

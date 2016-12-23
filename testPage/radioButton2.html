@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html >
+<head>
+    <link rel="stylesheet"  href="http://localhost/arcgis_js_api/library/3.14/3.14/dijit/themes/claro/claro.css">
+
+    <script>dojoConfig = {parseOnLoad: true}</script>
+    <script src="http://localhost/arcgis_js_api/library/3.14/3.14/init.js" data-dojo-config="isDebug: 1, async: 1, parseOnLoad: 1" charset="utf-8"></script>
+
+    <script>
+        require([
+            "dojo/parser",
+            "dojo/dom",
+            "dijit/form/RadioButton",
+            "dijit/form/Button", "dojo/dom-construct",// used for example purpose
+            "dojo/domReady!"
+        ], function(parser,dom, RadioButton,Button,domConstruct){
+            parser.parse();
+
+            var radioOne = new RadioButton({
+                id:"r1",
+                checked: true,
+                value: "tea",
+                label:"tea",
+                name: "drink",
+            }, domConstruct.create("input",{name:"drink"}));
+           dom.byId("buttonContainer").appendChild(radioOne.domNode);
+            dom.byId("buttonContainer").appendChild(domConstruct.create("label", {'for': "r1", innerHTML: "一次"}));
+            radioOne.startup();
+            var radioTwo= new RadioButton({
+                id:"r2",
+                checked: false,
+                value: "tea",
+                label:"tea",
+                name: "drink",
+            }, domConstruct.create("input",{name:"drink2"}));
+            dom.byId("buttonContainer").appendChild(radioTwo.domNode);
+            dom.byId("buttonContainer").appendChild(domConstruct.create("label", {'for': "r2", innerHTML: "二次"}));
+        });
+    </script>
+</head>
+<body class="claro">
+
+ <div id="buttonContainer"></div>
+</body>
+</html>

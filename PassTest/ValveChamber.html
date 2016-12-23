@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no">
+    <title>Convex Hull</title>
+
+    <link rel="stylesheet" href="http://localhost/arcgis_js_api/library/3.14/3.14/esri/css/esri.css">
+    <link rel="stylesheet"  href="http://localhost/arcgis_js_api/library/3.14/3.14/dijit/themes/claro/claro.css">
+    <style>
+        html, body { height: 100%; width: 100%; margin: 0; padding: 0; }
+        #mapu { padding:0; }
+        #titlePane {
+            width:200px;
+            height:300px;
+        }
+        .claro .dijitTitlePaneTitle {
+            background: #A4BDA7;
+            font-weight:600;
+            color:#33292B;
+        }
+        .dijitButtonNode {
+            background-color: #A4BDA7 !important;
+            border: 1px solid #646750 !important;
+            color:#33292B !important;
+        }
+    </style>
+
+    <script>var dojoConfig = {parseOnLoad: true};</script>
+    <script src="http://localhost/arcgis_js_api/library/3.14/3.14/init.js" data-dojo-config="isDebug: 1, async: 1, parseOnLoad: 1" charset="utf-8"></script>
+    <script>
+        var toolbar;
+        require(["dojo/parser",
+                    "dojo/dom",
+                    "dojo/on",
+                    "dojo/promise/all",
+                   "esri/map",
+                       "esri/tasks/query",
+                       "esri/tasks/QueryTask",
+                    "esri/tasks/StatisticDefinition",
+                    "esri/layers/ArcGISDynamicMapServiceLayer",
+                      "dojo/domReady!"],
+                function(parser,dom,on,all,map,Query,QueryTask,StatisticDefinition,ArcGISDynamicMapServiceLayer) {
+                    //     parser.parse();
+                    var map,query;
+                    map = new map("map", {
+                   basemap: "streets",
+                        center: [126.62, 45.69],
+                        zoom: 12
+                    });
+                    var query=new Query();
+                    var queryTask=new QueryTask("http://10.50.51.67:6080/arcgis/rest/services/hrb/hrbPipe_2015/MapServer/4");
+
+
+                    query.where="1=1";
+                    query.returnGeometry=false;
+                    var hrbLayer = new ArcGISDynamicMapServiceLayer("http://10.50.51.67:6080/arcgis/rest/services/hrb/hrbPipe_2015/MapServer");
+                    map.addLayer(hrbLayer);
+
+                     on("btnGetArea",getHuArea);
+                    function getHuArea() {
+
+                        queryTask.executeForCount(query, queryResult, queryErr);
+                    };
+                    function queryResult(count){
+                            var totalArea=count;
+                           dom.byId("vNumber").innerHTML=totalArea.toLocaleString()+"个";
+
+
+                    };
+
+                    function queryErr(err){
+                        console.log(err.toLocaleString());
+                    }
+                });
+
+    </script>
+</head>
+
+
+
+
+<body class="claro">
+
+<div data-dojo-type="dijit/layout/BorderContainer"   data-dojo-props="gutters:'false',design:'headline'" style="width: 100%; height: 100%;">
+   <div id="map" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'center'"  style="overflow:hidden;">
+           <div style="position:absolute; right:20px; top:10px; z-Index:999;">
+              <div id="titlePane" data-dojo-type="dijit/TitlePane" data-dojo-props="title:'Convex Hull', closable:'false', open:'true'">
+                  <p style="padding:5px 2px;color:#33292B;">Draw a rectangle around a group of block points to calculate the
+                      minimum bounding polygon ("convex hull") of the selected points.</p>
+
+                  <br>
+                  <button id="btnGetArea">统计</button>
+                  <label>共有:</label><label id="vNumber"></label>
+
+
+              </div>
+          </div>
+
+      </div>
+
+</div>
+</body>
+</html>

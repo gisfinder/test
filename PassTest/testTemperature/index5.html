@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no">
+    <title>温传</title>
+
+    <link rel="stylesheet" href="http://localhost/arcgis_js_api/library/3.14/3.14/esri/css/esri.css">
+    <link rel="stylesheet"  href="http://localhost/arcgis_js_api/library/3.14/3.14/dijit/themes/claro/claro.css">
+    <style>
+        html, body, #map{
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+    <script src="../lib/echarts.common.min.js"></script>
+    <script src="http://localhost/arcgis_js_api/library/3.14/3.14/init.js" data-dojo-config="isDebug: 1, async: 1, parseOnLoad: 1" charset="utf-8"></script>
+    <script>
+        var map;
+        require([
+            "esri/map", "esri/layers/FeatureLayer",      "esri/layers/ArcGISDynamicMapServiceLayer",
+            "esri/InfoTemplate", "esri/symbols/PictureMarkerSymbol","esri/renderers/UniqueValueRenderer",
+            "esri/renderers/ClassBreaksRenderer","esri/symbols/TextSymbol", "esri/InfoTemplate",
+            "esri/symbols/Font","esri/tasks/QueryTask","esri/tasks/query",
+            "dojox/charting/Chart", "dojox/charting/axis2d/Default", "dojox/charting/plot2d/Lines",
+            "esri/Color","dojo/_base/array","dojo/_base/lang","dojo/on","dojo/dom-construct","dojo/dom", "dojo/dom-style", "dojo/domReady!"
+        ], function(
+                Map, FeatureLayer,ArcGISDynamicMapServiceLayer,
+                InfoTemplate, PictureMarkerSymbol,UniqueValueRenderer,
+                ClassBreaksRenderer,TextSymbol,InfoTemplate,Font,QueryTask,Query,
+                Chart,Default,Lines,
+                Color,arrayUtils, lang,on,domConstruct,dom,domStyle,ready
+        ) {
+            map = new Map("map", {
+                center: [126.61, 45.68],
+
+                zoom: 10,
+                minZoom: 3,
+                maxZoom: 29,
+                showLabels : true
+            });
+            var execNumber=0;
+            //  var parcelsURL = "http://10.50.51.67:6080/arcgis/rest/services/test/hrbPipe_2016_feature3/MapServer/";
+            var parcelsURL = "http://10.50.51.67:6080/arcgis/rest/services/test/hrbTemperature2/MapServer";
+            map.addLayer(new ArcGISDynamicMapServiceLayer(parcelsURL));
+            var symbol = new PictureMarkerSymbol();
+            var valueField="DB_RAWData.dbo.viewClientTemp.Temp";
+            var timeField="DB_RAWData.dbo.viewClientTemp.TimeRecv";
+            var hoursField="RecvTime";
+            var temperaturesField="Temp"
+            var dIDField="DB_RAWData.dbo.viewClientTemp.DeviceID"
+            map.infoWindow.resize(400, 500);
+            var renderer = new ClassBreaksRenderer(symbol, "HeatArea");
+            var lLowSymbol=new PictureMarkerSymbol("images/BluePin1LargeB.png",40,40);//低低 <15度
+            var lowSymbol=new PictureMarkerSymbol("images/RedPin1LargeB.png",40,40);//低   15~18度
+            var mSymbol= new PictureMarkerSymbol("images/GreenPin1LargeB.png",40,40);//适中 18~22
+            var highSymbol=new  PictureMarkerSymbol("images/PurplePin1LargeB.png",40,40);//高 22~24
+            var hHighSymbol=new PictureMarkerSymbol("images/BluePin2LargeB.png",40,40);//高高 >24
+            var noValueSymbol=new PictureMarkerSymbol("images/greyPoint.png",40,40);//无数据
+
+            var infoTemplate = new InfoTemplate( );
+            /*
+            var featureLayer = new FeatureLayer("http://10.50.51.67:6080/arcgis/rest/services/test/testTemPoint/MapServer/0", {
+                mode: FeatureLayer.MODE_SNAPSHOT,
+                outFields: ["*"],
+                infoTemplate: infoTemplate
+            });
+*/
+            var currentTime = new Date().getTime()+8*3600000;
+            var tDate=new Date();
+         /*   var tYear=tDate.getFullYear();
+            var tHours=tDate.getHours();
+            var tMonth=tDate.getMonth();
+            */
+            var option = {
+                title: {
+                    text: 'ECharts 入门示例'
+                },
+                tooltip: {},
+
+                xAxis: {
+
+                },
+                yAxis: { type: 'value'},
+                series: [{
+                    type: 'line',
+                    data: [],
+                    markPoint : {
+                        data : [
+                            {type : 'max', name: '最大值'},
+                            {type : 'min', name: '最小值'}
+                        ]
+                    }
+                }]
+            };
+            var temperatureValues=[]; //点击某个点获取的24h温度值
+            var hourValues=[];//点击某个点获取的24h小时值
+            var query =  new Query();
+            var queryTask = new QueryTask("http://10.50.51.67:6080/arcgis/rest/services/test/testTemPoint/MapServer/0");
+            var queryCurve = new QueryTask("http://10.50.51.67:6080/arcgis/rest/services/test/testTemPoint/MapServer/2");
+
+            query.returnGeometry = true;
+            query.outFields = ["*"]
+      //      query.orderByFields=["%viewClientTemp.DeviceID"];
+        //    query.where=dIDField+"=1611  or "+dIDField+ "=1621 or "+dIDField+"=2073";
+       //     var infoTemplate = new InfoTemplate();
+            query.where="1=1";
+            var c = domConstruct.create("div", {  style: "width:300px;height:250px;",
+                id: "demoChart"
+            }, domConstruct.create("div",{id:"d2"}));
+
+            var myChart = echarts.init(c);
+            myChart.setOption(option);
+            queryTask.execute(query, addPointsToMap);
+            var points=[];
+            var font = new Font("12px", Font.STYLE_NORMAL, Font.VARIANT_NORMAL, Font.WEIGHT_BOLDER);
+
+            function addPointsToMap(results){
+                map.graphics.clear();
+                points=results.features;
+                var textFeature;
+                arrayUtils.forEach(points, function(feat) {
+                    var tSymbol=new TextSymbol(feat.attributes[valueField],font, new Color([0, 0, 0])).setOffset(0,-5);
+            //        feat.setInfoTemplate(infoTemplate);
+                    textFeature=lang.clone(feat);
+                var  sqlTime=new Date(feat.attributes[timeField]);
+                    if(currentTime-feat.attributes[timeField]<3600000) //1h内有数据
+                    {
+                        if(feat.attributes[valueField]<15)
+                            feat.setSymbol(lLowSymbol);
+                        if(feat.attributes[valueField]>=15&&feat.attributes[valueField]<18)
+                            feat.setSymbol(lowSymbol);
+                        if(feat.attributes[valueField]>=18&&feat.attributes[valueField]<22)
+                            feat.setSymbol(mSymbol);
+                        if(feat.attributes[valueField]>=22&&feat.attributes[valueField]<24)
+                            feat.setSymbol(highSymbol);
+                        if(feat.attributes[valueField]>=24)
+                            feat.setSymbol(hHighSymbol);
+
+                        map.graphics.add(feat);
+                        textFeature.setSymbol(tSymbol);
+                        map.graphics.add(textFeature);
+                    }
+                    else
+                    {
+                        feat.setSymbol(noValueSymbol);
+                        map.graphics.add(feat);
+                    }
+              //      on(feat, "click",featClickHandler);
+                    var timeDiff=(feat.attributes[timeField]-currentTime)/3600000;
+                    console.log(timeDiff);
+                    /*
+                    on(map.graphics, "click", function(evt) {
+               //      infoTemplate.setContent(getContent(feat));
+                        evt.graphic.setInfoTemplate(infoTemplate);
+                        map.infoWindow.resize(320,300);
+                    });
+                */
+                  on(map.graphics, "click", myGraphicsClickHandler);
+
+                })
+            }
+            function featClickHandler(evt){
+                console.log("here");
+            }
+            function myGraphicsClickHandler(evt){
+                console.log(evt.graphic);
+                temperatureValues=[];
+                hourValues=[];
+                query.where="DeviceID="+evt.graphic.attributes["DB_RAWData.dbo.viewClientTemp.DeviceID"];
+                query.outFields=["*"];
+                query.orderByFields =[hoursField];
+                queryCurve.execute(query);
+                on(queryCurve, "complete", initLineID);
+                function initLineID(results){
+                    var i=0;
+                    arrayUtils.forEach(results.featureSet.features,  function(result) {
+
+                        temperatureValues.push(result.attributes[temperaturesField]);
+                        var tHour=new Date(result.attributes[hoursField].getHours());
+                        hourValues.push(i);
+                        i++;
+                    });
+                    var optionsAjax = myChart.getOption();
+                    optionsAjax.xAxis.data=hourValues;
+                    optionsAjax.series[0].data=temperatureValues;
+                    myChart.setOption(optionsAjax);
+
+                   // console.log(execNumber);
+                    infoTemplate.setContent(myChart._dom);
+                    evt.graphic.setInfoTemplate(infoTemplate)
+                }
+            }
+            function  getTempValues(results) {
+                var i=0;
+                arrayUtils.forEach(results.features,  function(result) {
+
+                    temperatureValues[i]=result.attributes[temperaturesField];
+                    hourValues[i]=result.attributes[hoursField];
+                    i++;
+                });
+                option.xAxis.data=hourValues;
+                option.yAxis.data=temperatureValues;
+                myChart .setOption(option);
+                infoTemplate.setContent(myChart._dom);
+            }
+
+            function getContent(graphic){
+                temperatureValues=[];
+                hourValues=[];
+                query.where="DeviceID=1777";//+graphic.attributes["DB_RAWData.dbo.viewClientTemp.DeviceID"];
+                query.outFields=["*"];
+                queryCurve.execute(query, getTempValues);
+
+
+                return myChart._dom;
+            }
+
+
+
+        });
+    </script>
+</head>
+
+<body>
+
+<div id="map"></div>
+</body>
+
+</html>
+ 

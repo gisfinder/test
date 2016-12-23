@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no">
+    <title>Custom Info Window</title>
+    <link rel="stylesheet" href="http://localhost/arcgis_js_api/library/3.14/3.14/esri/css/esri.css">
+    <link rel="stylesheet"  href="http://localhost/arcgis_js_api/library/3.14/3.14/dijit/themes/claro/claro.css">
+
+    <style>
+        html, body, #mapDiv { height: 100%; width: 100%; margin: 0; padding: 0; }
+
+    </style>
+
+    <script>var dojoConfig = {
+        parseOnLoad:true,
+        packages: [{
+            "name": "myModules",
+            "location": location.pathname.replace(/\/[^/]+$/, "") + "/myModules"
+        }]
+    };
+    </script>
+    <script src="http://localhost/arcgis_js_api/library/3.14/3.14/init.js" data-dojo-config="isDebug: 1, async: 1, parseOnLoad: 1" charset="utf-8"></script>
+
+</head>
+<body>
+<script>
+
+        var  div = document.getElementById('mapDiv');
+
+        div.onclick=function()
+        {
+
+        alert("hi");
+
+        }
+
+
+
+    function blur(){
+        alert("blur");
+    };
+    function focus(){
+        alert("focus");
+    };
+    function mouseOver(){
+        alert("mOver");
+    };
+    function click(){
+        alert("click");
+    }
+</script>
+<div id="mapDiv" title="hello">测试</div>
+<div id="blink">闪烁的文字</div>
+<script language="javascript">
+    function changeColor(){
+        var color="#f00|#0f0|#00f|#880|#808|#088|yellow|green|blue|gray";
+        color=color.split("|");
+        document.getElementById("blink").style.color=color[parseInt(Math.random() * color.length)];
+    }
+    setInterval("changeColor()",200);
+</script>
+</body>
+</html>

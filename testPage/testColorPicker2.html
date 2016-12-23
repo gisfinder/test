@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <title>ColorPalette Test</title>
+  <link rel="stylesheet"  href="http://localhost/arcgis_js_api/library/3.14/3.14/dijit/themes/claro/claro.css">
+
+    <script src="http://localhost/arcgis_js_api/library/3.14/3.14/init.js" data-dojo-config="isDebug: 1, async: 1, parseOnLoad: 1" charset="utf-8"></script>
+</head>
+
+<body class="claro">
+
+<div data-dojo-type="dijit/ColorPalette" id="cp"  data-dojo-props="palette:'3x4'"></div>
+<script>
+    require(["dojo/aspect","dojo/parser", "dijit/ColorPalette","dijit/registry"],
+            function(aspect,parser,ColorPalette,registry){
+                parser.parse();
+                var t=registry.byId("cp");
+                aspect.after(t, "onChange", function() {
+
+                    alert(t.value);
+                });
+            });
+
+</script>
+</body>
+</html>

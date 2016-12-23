@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no">
+    <title>Feature Layer - display results as an InfoWindow onHover</title>
+
+    <link rel="stylesheet" href="http://localhost/arcgis_js_api/library/3.14/3.14/esri/css/esri.css">
+    <link rel="stylesheet"  href="http://localhost/arcgis_js_api/library/3.14/3.14/dijit/themes/claro/claro.css">
+    <style>
+        html, body, #mapDiv {
+            padding:0;
+            margin:0;
+            height:100%;
+        }
+        #mapDiv {
+            position: relative;
+        }
+        #info {
+            background: #fff;
+            box-shadow: 0 0 5px #888;
+            left: 1em;
+            padding: 0.5em;
+            position: absolute;
+            top: 1em;
+            z-index: 40;
+        }
+    </style>
+    <script>
+        var dojoConfig = {
+            // baseUrl: "js/",
+            packages: [{
+                name: "app",
+                location: "/test"
+            }]
+
+        };
+    </script>
+    <script src="http://localhost/arcgis_js_api/library/3.14/3.14/init.js" data-dojo-config="isDebug: 1, async: 1, parseOnLoad: 1" charset="utf-8"></script>
+
+</head>
+<body class="tundra">
+<div id="mapDiv">
+    <div id="info">
+        Hover over a county in South Carolina to get more information.
+    </div>
+    <div id="HomeButton"></div>
+</div>
+<button id="changePipeColor">更改颜色</button>
+<button id="resetRender">改回颜色</button>
+<br>
+<button id="totalLength">总长度</button><label id="txtLength">总长度</label>
+<br>
+
+<button id="btnCalc">计算平均管龄、容积、表面积,总长度</button>
+<br><label id="txtAge">管龄</label><br>
+<label id="txtVolume">容积</label><br>
+<label id="txtSurface">表面积</label>
+<script>
+    var map, dialog;
+    require(["dojo/parser",
+            "dojo/dom",
+            "dojo/on",
+            "dojo/promise/all",
+        "dojo/_base/array",
+            "app/js/Test2",
+        "esri/map",
+        "esri/dijit/HomeButton",
+        "esri/tasks/query",
+        "esri/tasks/QueryTask",
+        "esri/tasks/StatisticDefinition",
+        "esri/layers/LayerDrawingOptions",
+        "esri/layers/ArcGISDynamicMapServiceLayer",
+        "esri/symbols/SimpleLineSymbol",
+        "esri/renderers/SimpleRenderer", "esri/graphic", "esri/lang",
+        "esri/Color", "dojo/number", "dojo/dom-style",
+        "dijit/TooltipDialog", "dijit/popup", "dojo/domReady!"
+    ], function(parser,dom,on,all,
+                arrayUtils,Test2,Map,HomeButton,
+                Query, QueryTask,StatisticDefinition,
+     LayerDrawingOptions, DynamicLayer,
+            SimpleLineSymbol,
+            SimpleRenderer, Graphic, esriLang,
+            Color, number, domStyle,
+            TooltipDialog, dijitPopup
+    ) {
+        parser.parse();
+        map = new Map("mapDiv" ,{  id: "hrbPipe", zoom:1, basemap: "topo"  } );
+        var cButton=dom.byId("changePipeColor");
+        var tButton=dom.byId("totalLength");
+       var calcButton=dom.byId("btnCalc");
+        var rButton=dom.byId("resetRender");
+        var leryUrl=Test2.url+"/"+Test2.layerId;
+        var queryTask=new QueryTask(leryUrl);
+        var pipeLength=[];//管长
+        var pipeDiam=[];//管径
+        var pipeConstructYear=[];//建设年限
+        var currYear=new Date().getYear(); //当前年
+        var statQuery = new Query();
+        var calculateQuery=new Query();
+        var calcPipeSumLength=0; //计算用管长
+        var statPipeSumLength=0;//统计总管长
+        var pipeVolume=0;//容积
+        var pipeSufaceArea=0;//表面积
+        var pipeAge=0;//管龄
+        //   var hrbLayer = new DynamicLayer("http://10.50.51.67:6080/arcgis/rest/services/hrb/hrbPipe_2015/MapServer");
+//https://sampleserver6.arcgisonline.com/arcgis/rest/services/Census/MapServer
+
+        var hrbLayer = new DynamicLayer( Test2.url );
+        //  southCarolinaCounties.setDefinitionExpression("STATE_NAME = 'South Carolina'");
+         var layerDrawingOptions = [];
+   //    var defaultLayerDrawingOptions=hrbLayer.layerDrawingOptions[Test2.layerId];
+        var layerDrawingOption = new LayerDrawingOptions();
+        map.addLayer(hrbLayer);
+
+        var home = new HomeButton({
+            map: map
+        }, "HomeButton");
+        home.startup();
+        on(calcButton,"click",calcPipeParam);
+        on(rButton,"click",function(){
+                    hrbLayer.setLayerDrawingOptions(defaultLayerDrawingOptions);
+                }
+
+
+        );
+        on(cButton, "click", function()
+        {
+            var symbol = new SimpleLineSymbol();
+            symbol.setColor(new Color([255, 255, 0, 1]));
+            symbol.setWidth(1.75);
+            layerDrawingOption.renderer = new SimpleRenderer(symbol);
+
+            layerDrawingOptions[Test2.layerId] = layerDrawingOption;
+            hrbLayer.setLayerDrawingOptions(layerDrawingOptions);
+
+
+
+        });
+
+        on(tButton,"click",function(){
+                    queryTask.execute(query, handleQueryResult, errorHandler);
+                   // dom.byId("markTotalLength").innerHTML="here ,total length=";
+                }
+
+
+        );
+        function handleQueryResult(results) {
+            if ( ! results.hasOwnProperty("features") ||
+                    results.features.length === 0 ) {
+                return; // no features, something went wrong
+            }
+            dom.byId("markTotalLength").innerHTML= results.features[0].attributes["SUM(SHAPE.len) AS SUM_SHAPE_len"].toFixed(0) +" 米";
+
+        };
+        function errorHandler(err){
+            console.log(err.toLocaleString());
+
+        };
+        function statPipeLength(){
+            var tLengthStatDef = new StatisticDefinition();
+            tLengthStatDef.statisticType ="sum";
+            tLengthStatDef.onStatisticField="SHAPE.len";
+
+            //     tLengthStatDef. outStatisticFieldName="totalLength";
+
+            statQuery.where="1=1";
+            statQuery.returnGeometry=false;
+            statQuery.outStatistics = [ tLengthStatDef ];
+        };
+        //计算管道统计参数
+        function calcPipeParam(){
+            statPipeLength();
+            statPipeSumLength=0;
+            calcPipeSumLength=0;
+            pipeVolume=0;
+            pipeSufaceArea=0;
+            pipeAge=0;
+            calculateQuery.outFields=[Test2.pipeLength,Test2.pipeConstructYear,Test2.diam];
+            calculateQuery.where=Test2.pipeLength+" is not null and "+Test2.pipeConstructYear+" is not null";
+            all([queryTask.execute(calculateQuery),queryTask.execute(statQuery)]).then(function(results)
+            {
+                statPipeSumLength=results[1].features[0].attributes["SUM(SHAPE.len) AS SUM_SHAPE_len"].toFixed(0);
+                arrayUtils.forEach( results[0].features,function(feature){
+                    calcPipeSumLength=calcPipeSumLength+feature.attributes[Test2.pipeLength];
+                    pipeVolume=pipeVolume+3.14/4000000*feature.attributes[Test2.diam]*feature.attributes[Test2.diam]*feature.attributes[Test2.pipeLength];
+                    pipeSufaceArea=pipeSufaceArea+3.14*feature.attributes[Test2.diam]/1000*feature.attributes[Test2.pipeLength];
+                    pipeAge=pipeAge+(currYear-feature.attributes[Test2.pipeConstructYear]+1900)*feature.attributes[Test2.pipeLength];
+                });
+                pipeAge=(pipeAge/calcPipeSumLength).toFixed(1);
+                calcPipeSumLength=(calcPipeSumLength*2).toFixed(0);
+                pipeSufaceArea=(pipeSufaceArea*2).toFixed(0);
+                pipeVolume=(pipeVolume*2).toFixed(0);
+                statPipeSumLength=(statPipeSumLength*2).toFixed(0);
+                 dom.byId("txtAge").innerHTML="管龄："+pipeAge+" 年";
+                dom.byId("txtVolume").innerHTML="双管容积:"+pipeVolume+" 立方米";
+                dom.byId("txtSurface").innerHTML="双管表面积:"+pipeSufaceArea+" 平米";
+                dom.byId("txtLength").innerHTML="双管长："+statPipeSumLength+" 米";
+            },function(err){
+                console.log(err.toLocaleString());
+            });
+           // queryTask.execute(calculateQuery),, getQueryResult, qErrHandler);
+        };
+        function getQueryResult(results){
+            if ( ! results.hasOwnProperty("features") ||
+                    results.features.length === 0 ) {
+                return; // no features, something went wrong
+            }
+
+        };
+        function qErrHandler(err){
+            console.log(err.toLocaleString());
+        };
+        //处理查询结果
+        function processQueryResult(){
+
+        }
+        //
+        //
+
+    });
+</script>
+</body>
+</html>

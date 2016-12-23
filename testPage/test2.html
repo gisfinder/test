@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>模块与包</title>
+    <label id="test">测试</label>
+    <script>
+        var dojoConfig = {
+   // baseUrl: "js/",
+            async:true,
+            packages: [{
+                name: "com",
+                location: "com"
+            }]
+        };
+    </script>
+    <script src="http://js.arcgis.com/3.9/"></script>
+
+    <script>
+        require(["dojo/dom","dojo/on","dojo/_base/lang"], function(dom,on,lang){
+         //  var lb=dom.byId("test");
+            var processEvent = function(e){
+                 lb.innerHTML = "changed";
+            };
+        lb:function(){
+            console.log
+        }
+          //  on(lb, "click",  processEvent );
+          lb();
+        });
+    </script>
+</head>
+<body class="tundra">
+<p>
+    这是一用于基于控制台开发测试的文件。
+</p>
+</body>
+</html>

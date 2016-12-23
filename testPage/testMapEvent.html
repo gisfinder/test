@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no">
+    <title>Well completion dates for the Hugoton Gas Field Over Time</title>
+
+    <link rel="stylesheet" href="https://js.arcgis.com/3.16/dijit/themes/claro/claro.css">
+    <link rel="stylesheet" href="https://js.arcgis.com/3.16/esri/css/esri.css">
+    <style>
+        html, body, #mapDiv {
+            padding:0;
+            margin:0;
+            height:100%;
+        }
+
+        #mapDiv {
+            position: relative;
+        }
+
+        #bottomPanel {
+            left: 50%;
+            margin: 0 auto;
+            margin-left: -500px;
+            position: absolute;
+            bottom: 2.5em;
+        }
+
+        #timeInfo{
+            border-radius: 4px;
+            border: solid 2px #ccc;
+            background-color: #fff;
+            display: block;
+            padding: 5px;
+            position: relative;
+            text-align: center;
+            width: 1000px;
+            z-index: 99;
+        }
+    </style>
+
+    <script src="https://js.arcgis.com/3.16/"></script>
+    <script>
+        var map;
+        require([
+            "esri/map", "esri/layers/ArcGISDynamicMapServiceLayer",
+            "esri/TimeExtent", "esri/dijit/TimeSlider",
+            "dojo/_base/array", "dojo/dom", "dojo/domReady!"
+        ], function(
+                Map, ArcGISDynamicMapServiceLayer,
+                TimeExtent, TimeSlider,
+                arrayUtils, dom
+        ) {
+            map = new Map("mapDiv", {
+                basemap: "streets",
+                center: [-101.15, 37.604],
+                zoom: 9
+            });
+
+            var opLayer = new ArcGISDynamicMapServiceLayer("http://10.50.51.67:6080/arcgis/rest/services/hrb/hrbPipe_2015/MapServer");
+            // opLayer.setVisibleLayers([0]);
+
+            //apply a definition expression so only some features are shown
+
+            //   layerDefinitions[0] = "FIELD_KID=1000148164";
+            //   opLayer.setLayerDefinitions(layerDefinitions);
+
+            //add the gas fields layer to the map
+            map.addLayers([opLayer]);
+
+            map.on("layers-add-result", initSlider);
+
+            function initSlider() {
+                alert("here");
+            }
+        });
+    </script>
+</head>
+<body class="claro">
+
+<div id="mapDiv">
+    <div id="bottomPanel">
+        <div id="timeInfo">
+            <div id="timeSliderDiv"></div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+ 

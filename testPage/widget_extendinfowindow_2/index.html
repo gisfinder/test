@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no">
+    <title>Custom Info Window</title>
+      <link rel="stylesheet" href="http://10.50.51.67/arcgis_js_api_v318/arcgis_js_v318_api/arcgis_js_api/library/3.18/3.18/esri/css/esri.css">
+      <link rel="stylesheet" href="http://10.50.51.67/arcgis_js_api_v318/arcgis_js_v318_api/arcgis_js_api/library/3.18/3.18/dijit/themes/claro/claro.css">
+    <link rel="stylesheet" href="myModules/InfoWindow.css">
+    <style>
+      html, body, #mapDiv { height: 100%; width: 100%; margin: 0; padding: 0; }
+
+    </style>
+      <style>
+
+
+      </style>
+    <script>var dojoConfig = {
+        parseOnLoad:true,
+        packages: [{
+          "name": "myModules",
+          "location": location.pathname.replace(/\/[^/]+$/, "") + "/myModules"
+        }]
+      };
+    </script>
+      <script src="http://10.50.51.67/arcgis_js_api_v318/arcgis_js_v318_api/arcgis_js_api/library/3.18/3.18/init.js"></script>
+      <script type="text/javascript">
+  var  infoList=[];
+    require(["dojo/parser",
+      "dojo/dom",
+      "dojo/dom-construct",
+      "dojo/_base/array",
+        "dojo/promise/all",
+      "esri/map",
+      "myModules/InfoWindow",  "esri/tasks/query",
+        "esri/tasks/QueryTask",
+      "esri/symbols/SimpleLineSymbol", "esri/symbols/SimpleFillSymbol",
+      "esri/renderers/SimpleRenderer",
+      "esri/layers/FeatureLayer",
+      "esri/InfoTemplate",
+      "dojo/domReady!"
+    ], function(
+      parser,
+       dom,
+       domConstruct,array,all,
+        Map,
+       InfoWindow,Query,QueryTask,
+        SimpleLineSymbol, SimpleFillSymbol,
+        SimpleRenderer,
+       FeatureLayer,
+       InfoTemplate
+       ) {
+      parser.parse();
+       var query=new Query();
+       var queryTask=new QueryTask("http://10.50.51.67:6080/arcgis/rest/services/test/testSubstation/MapServer/0");
+        var scadaTask=new QueryTask("http://10.50.51.67:6080/arcgis/rest/services/test/hrbTestScada/MapServer/1");
+        var map = new Map("mapDiv", {
+        center: [126.63,45.69],
+        zoom: 16,
+        basemap: "topo",
+
+      });
+      var stationList=[],scadaList=[];
+      //define the info template that is used to display the popup content.
+      var recycleNum=0;
+      var initWindow=true;
+      //create the feature layer (street trees of San Francisco)
+      var featureLayer = new FeatureLayer("http://10.50.51.67:6080/arcgis/rest/services/test/testSubstation/MapServer/0", {
+        mode: FeatureLayer.MODE_ONDEMAND,
+        outFields: ["LABEL"]
+      });
+        map.addLayer(featureLayer);
+
+        query.where="1=1";
+        query.outFields=["REFCOD","LABEL"];
+        query.returnGeometry=true;
+        query.outSpatialReference = {wkid:102100};
+        var scadaQuery=new Query();
+        scadaQuery.where="keyHu=1";
+        scadaQuery.outFields=["*"];
+        var ifShow=true;
+        featureLayer.on("update-end", function (evt) {
+
+            if(ifShow)
+                initInfoWindow();
+        });
+      function initInfoWindow(){
+          ifShow=false;
+          all([queryTask.execute(query),scadaTask.execute(scadaQuery)]).then(function(results){
+              stationList=results[0];
+              scadaList=results[1];
+              createInfoWindow();
+          });
+    //      setTimeout(updateScadaValue,100000);
+      };
+
+      function createInfoWindow(){
+          var i=0;
+          array.forEach(stationList.features,function(station,index){
+              if(index<433) {
+                  var infoWindow = new InfoWindow({
+                      domNode: domConstruct.create("div", {id: index.toString()}, dom.byId("mapDiv"))
+                  });
+                  infoWindow.setMap(map);
+                  var labelPt = station.geometry;
+                  labelPt.spatialReference = map.spatialReference;
+                  infoWindow.setTitle("<span class='subTitle'    \>" + station.attributes["LABEL"].substr(0, 4) + "\</span>");
+
+                  var huCode = "";
+                  var subCode = station.attributes["REFCOD"];
+                  var subName = station.attributes["LABEL"];
+
+                  var huList = []; //每个换热站的机组列表
+                  var findFirstHus = false;//是否找到了换热站的第一个机组
+                  var sValue = {};//每个换热站的第一个机组的数据
+                  var stationScadaList=[];
+                  array.forEach(scadaList.features, function (scadaValue) {
+                      findFirstHus = false;
+                //      console.log("refCode:"+station.attributes["REFCOD"] );
+                      if (station.attributes["REFCOD"]!=null && station.attributes["REFCOD"].substring(8) == scadaValue.attributes["suCode"]) {
+
+                          stationScadaList.push(scadaValue);
+                          huList.push({code: scadaValue.attributes["huCode"], desc: scadaValue.attributes["HuNum"]});
+
+                      }
+                  });
+                  if (sValue&&station.attributes["REFCOD"]!=null) {
+                 huCode=huList[0].code;
+                      sValue=stationScadaList[0];
+                  infoWindow.passScadaValue(subCode, subName, huCode, sValue, huList,stationScadaList);
+                  infoWindow.__mcoords = labelPt;
+                  infoWindow.show(map.toScreen(labelPt));
+                  infoList.push(infoWindow);
+                   }
+              }
+
+              i++;
+          });
+
+      };
+
+      function updateScadaValue(){
+        console.log("start update");
+           recycleNum++;
+          if(recycleNum>9)
+              recycleNum=1;
+          array.forEach(infoList,function(infWin,index){
+              infWin.setContent(recycleNum.toString());
+          })
+      //    setTimeout(updateScadaValue,100000);
+      }
+
+
+    });
+    </script>
+  </head>
+  <body class="claro">
+    <div id="mapDiv"></div>
+  </body>
+</html>

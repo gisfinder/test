@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html >
+<head>
+
+    <link rel="stylesheet"  href="http://localhost/arcgis_js_api/library/3.14/3.14/dijit/themes/claro/claro.css">
+    <style>
+        .jd	{ border-bottom:1px dotted blue; cursor:pointer; padding:2px; display:inline-block; font:italic bold 10px arial,sans-serif;}
+        .pri { border-bottom:1px dotted blue; cursor:pointer; padding:2px; display:inline-block; font:italic bold 10px arial,sans-serif;}
+    </style>
+    <script>dojoConfig = {parseOnLoad: true}</script>
+    <script src="http://localhost/arcgis_js_api/library/3.14/3.14/init.js" data-dojo-config="isDebug: 1, async: 1, parseOnLoad: 1" charset="utf-8"></script>
+
+    <script>
+        require(["dijit/Menu", "dijit/MenuItem", "dijit/form/ComboButton", "dojo/domReady!"],
+                function(Menu, MenuItem, ComboButton){
+                    var menu = new Menu({ style: "display: none;"});
+                    var menuItem1 = new MenuItem({
+                        label: "Yahoo",
+                        onClick: function(){ alert('hi'); }
+                    });
+                    menu.addChild(menuItem1);
+
+                    var menuItem2 = new MenuItem({
+                        label: "Google",
+                        onClick: function(){ alert('ho'); }
+                    });
+                    menu.addChild(menuItem2);
+                    menu.startup();
+
+                    var button = new ComboButton({
+                        label: "",
+                        dropDown: menu
+                    });
+                    button.placeAt(dojo.body());
+                    button.startup();
+                });
+    </script>
+</head>
+<body class="claro">
+
+</body>

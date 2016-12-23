@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html >
+<head>
+
+    <link rel="stylesheet"  href="http://localhost/arcgis_js_api/library/3.14/3.14/dijit/themes/claro/claro.css">
+
+    <script>dojoConfig = {parseOnLoad: true}</script>
+    <script src="http://localhost/arcgis_js_api/library/3.14/3.14/init.js" data-dojo-config="isDebug: 1, async: 1, parseOnLoad: 1" charset="utf-8"></script>
+
+    <script>
+        require(["dijit/form/Select",
+            "dojo/data/ObjectStore",
+            "dojo/store/Memory"
+        ], function(Select, ObjectStore, Memory){
+
+            var store = new Memory({
+                data: [
+                    { id: "foo", label: "Foo" },
+                    { id: "bar", label: "Bar" }
+                ]
+            });
+
+            var os = new ObjectStore({ objectStore: store });
+
+            var s = new Select({
+                store: os
+            }, "target");
+            s.startup();
+
+            s.on("change", function(){
+                console.log("my value: ", this.get("value"))
+            })
+        })
+    </script>
+</head>
+<body class="claro">
+<div id="target"></div>
+</body>
+</html>

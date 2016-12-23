@@ -1,0 +1,50 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css"
+          href="dojo/dijit/themes/dijit.css">
+    <link rel="stylesheet" type="text/css"
+          href="dojo/dijit/themes/claro/claro.css">
+    <title>t1</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/javascript"  data-dojo-config="async: true"   src="http://localhost/arcgis_js_api/library/3.14/3.14/init.js"></script>
+    <script type="text/javascript">
+        require(
+// Set of module identifiers
+                [ "dojo", "dijit/registry", "dojo/parser", "dijit/layout/BorderContainer", "dijit/layout/ContentPane", "loan/LoanInput", "dojo/currency" ],
+// Callback function, invoked on dependencies evaluation results
+                function(dojo, registry) {
+                    dojo.ready(function() {
+                        // get the LoanInput widget
+                        loanWidget = registry.byId('LoanInput');
+
+                        // handle "calculate" from widget "LoanInput"
+                        dojo.connect(dijit.registry.byId("LoanInput"), "calculate", function(event) {
+                            var payment = loanWidget.monthlyPayment;
+                            if (payment == NaN) {
+                                payment = 0;
+                            }
+
+                            // update the result field
+                            var formattedValue = dojo.currency.format(payment, {currency: "USD"});
+                            dojo.attr("monthlyPayment", "innerHTML", formattedValue);
+                        });
+                    });
+                });
+    </script>
+</head>
+<body class="claro">
+<div id="BorderContainer" style="height: 500px; width: 500px"
+     data-dojo-type="dijit.layout.BorderContainer"
+     data-dojo-props="design:'headline'">
+    <div data-dojo-type="dijit.layout.ContentPane"
+         data-dojo-props="region:'top'">Loan Payment Calculator</div>
+    <div data-dojo-type="dijit.layout.ContentPane"
+         data-dojo-props="region:'center'">
+        <div id="LoanInput" data-dojo-type="loan.LoanInput"></div>
+        <div>Monthly Payment: <span id="monthlyPayment"></span></div>
+    </div>
+</div>
+
+</body>
+</html>

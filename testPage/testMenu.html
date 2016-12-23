@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html >
+<head>
+
+    <link rel="stylesheet"  href="http://localhost/arcgis_js_api/library/3.14/3.14/dijit/themes/claro/claro.css">
+<style>
+    .jd	{ border-bottom:1px dotted blue; cursor:pointer; padding:2px; display:inline-block; font:italic bold 10px arial,sans-serif;}
+    .pri { border-bottom:1px dotted blue; cursor:pointer; padding:2px; display:inline-block; font:italic bold 10px arial,sans-serif;}
+</style>
+    <script>dojoConfig = {parseOnLoad: true}</script>
+    <script src="http://localhost/arcgis_js_api/library/3.14/3.14/init.js" data-dojo-config="isDebug: 1, async: 1, parseOnLoad: 1" charset="utf-8"></script>
+
+    <script>
+        require([
+            "dijit/MenuBar",
+            "dijit/PopupMenuBarItem",
+            "dijit/Menu",
+            "dijit/MenuItem",
+            "dijit/DropDownMenu",
+            "dojo/domReady!"
+        ], function(MenuBar, PopupMenuBarItem, Menu, MenuItem, DropDownMenu){
+            var pMenuBar = new MenuBar({});
+
+            var pSubMenu = new DropDownMenu({});
+            pSubMenu.addChild(new MenuItem({
+                label: "<span class='pri'>pri</span>"
+            }));
+            pSubMenu.addChild(new MenuItem({
+                label: "<span class='pri'>sec</span>"
+            }));
+            pMenuBar.addChild(new PopupMenuBarItem({
+                label: "File",
+                popup: pSubMenu
+            }));
+
+            var pSubMenu2 = new DropDownMenu({});
+            pSubMenu2.addChild(new MenuItem({
+                label: "Cut",
+                iconClass: "dijitEditorIcon dijitEditorIconCut"
+            }));
+            pSubMenu2.addChild(new MenuItem({
+                label: "Copy",
+                iconClass: "dijitEditorIcon dijitEditorIconCopy"
+            }));
+            pSubMenu2.addChild(new MenuItem({
+                label: "Paste",
+                iconClass: "dijitEditorIcon dijitEditorIconPaste"
+            }));
+            pMenuBar.addChild(new PopupMenuBarItem({
+                label: "Edit",
+                popup: pSubMenu2
+            }));
+
+            pMenuBar.placeAt("wrapper");
+            pMenuBar.startup();
+        });
+    </script>
+</head>
+<body class="claro" >
+<div id="wrapper" class="jd"></div>
+</body>
+</html>

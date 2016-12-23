@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no">
+    <title>Custom Info Window</title>
+    <link rel="stylesheet" href="http://localhost/arcgis_js_api/library/3.14/3.14/esri/css/esri.css">
+    <link rel="stylesheet"  href="http://localhost/arcgis_js_api/library/3.14/3.14/dijit/themes/claro/claro.css">
+
+    <style>
+      html, body, #mapDiv { height: 100%; width: 100%; margin: 0; padding: 0; }
+      .myInfoWindow {
+          top:30;
+          width:70px;
+          height:85px;
+          position: absolute;
+          z-index: 100;
+          border-radius: 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px; -o-border-radius: 5px;
+          -moz-box-shadow: 0 0 1em #26393D;
+          border: 1px solid #046380;
+          font-family: sans-serif;
+          font-size: 12px;
+          background-color:#EFECCA;
+      }
+
+      .dj_ie .myInfoWindow {
+          border: 0px solid black;
+      }
+     .myInfoWindow .title {
+          font-weight: bold;
+          overflow:hidden;
+          padding: 2px 2px 2px 2px;
+          background-color: #6495ED;
+          color:#E6E2AF;
+      }
+      .myInfoWindow .pointerLeft{
+          position: absolute;
+          top:70px;
+          left:-2px;
+          width: 20px;
+          height:20px;
+          background-image: url("../img/triangle3.png");
+      }
+    </style>
+
+    <script>var dojoConfig = {
+        parseOnLoad:true,
+        packages: [{
+          "name": "myModules",
+          "location": location.pathname.replace(/\/[^/]+$/, "") + "/myModules"
+        }]
+      };
+    </script>
+    <script src="http://localhost/arcgis_js_api/library/3.14/3.14/init.js" data-dojo-config="isDebug: 1, async: 1, parseOnLoad: 1" charset="utf-8"></script>
+    <script>
+
+    require(["dojo/parser",
+      "dojo/dom",
+      "dojo/dom-construct",
+      "dojo/_base/array",
+        "dojo/promise/all",
+         "dojo/_base/declare",
+        "dojo/on",
+        "esri/domUtils",
+        "dojo/_base/lang",
+        "dojo/dom-class",
+          "dojo/dom-style",
+        "esri/InfoWindowBase",
+      "dojo/ready"
+    ], function(
+      parser, dom, domConstruct,array,all, declare,on,domUtils,lang,domClass,domStyle,InfoWindowBase,ready
+       ) {
+        ready(function() {
+            parser.parse();
+
+
+            var InfoWindow = declare(
+                    InfoWindowBase,
+                    {
+                        align: "Middle_Top",
+                        constructor: function (parameters) {
+                            lang.mixin(this, parameters);
+                            domClass.add(this.domNode, "myInfoWindow");
+                            this._pointer2 = domConstruct.create("div", {"class": "pointerLeft"}, this.domNode);
+                            this._title = domConstruct.create("div", {
+                                "class": "title",
+                                style: "overflow:hidden,width:60px, heiht:50px"
+                            }, this.domNode);
+                            this._content = domConstruct.create("div", {"class": "content"}, this.domNode);
+                            this._pointer = domConstruct.create("div", {"class": "pointerLeft"}, this.domNode);
+                            domUtils.hide(this.domNode);
+                            this.isShowing = false;
+                        },
+
+                        setTitle: function (title) {
+                            this.place(title, this._title);
+
+                        },
+                        show: function (location) {
+                            this.coords = location;
+                            domUtils.show(this.domNode);
+                            this.isShowing = true;
+                            this.onShow();
+                        },
+
+                        destroy: function () {
+                            array.forEach(this._eventConnections, function (handle) {
+                                handle.remove();
+                            });
+                            domConstruct.destroy(this.domNode);
+                            this._closeButton = this._title = this._content = this._eventConnections = null;
+                        }
+                    }
+            );
+            on(dom.byId("btn"), "click", lang.hitch(this, function (e) {
+                //*******Change the curve****************/
+                var infoWindow = new InfoWindow({
+                    domNode: domConstruct.create("div", {id: "311"}, dom.byId("mapDiv"))
+                });
+                var pt = {x: 1120, y: 1130};
+
+                infoWindow.setTitle("Title1");
+                infoWindow.show(pt);
+            }))
+
+
+
+
+        })
+        }
+
+  );
+    </script>
+  </head>
+  <body class="claro">
+  <button id="btn">click me</button>
+    <div id="mapDiv"></div>
+
+  </body>
+</html>

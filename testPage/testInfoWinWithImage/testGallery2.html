@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no">
+    <title>测试InfoWindow和Image</title>
+
+    <link rel="stylesheet" href="http://localhost/arcgis_js_api_v318/arcgis_js_v318_api/arcgis_js_api/library/3.18/3.18/dojox/image/resources/image.css">
+    <link rel="stylesheet" href="http://localhost/arcgis_js_api_v318/arcgis_js_v318_api/arcgis_js_api/library/3.18/3.18/esri/css/esri.css">
+    <link rel="stylesheet"  href="http://localhost/arcgis_js_api_v318/arcgis_js_v318_api/arcgis_js_api/library/3.18/3.18/dijit/themes/claro/claro.css">
+
+
+    <style>
+        html, body { height: 100%; width: 100%; margin: 0; padding: 0; }
+        #map{padding:0;}
+        #thumbPickerDiv{
+            border:solid 1px #79663b;
+            -moz-border-radius: 6px;
+            -webkit-border-radius: 6px;
+        }
+    </style>
+
+    <script>var dojoConfig = { parseOnLoad: true };</script>
+    <script src="http://localhost/arcgis_js_api/library/3.14/3.14/init.js" data-dojo-config="isDebug: 1, async: 1, parseOnLoad: 1" charset="utf-8"></script>
+
+
+    <script>
+        require(["dojo/on","dojo/dom",  "dojo/dom-construct", "dojo/dom-class", "esri/dijit/InfoWindow","esri/InfoTemplate",
+                    "dijit/layout/ContentPane", "dijit/layout/TabContainer",
+                    "esri/layers/FeatureLayer","esri/symbols/PictureMarkerSymbol",
+                    "esri/layers/ArcGISTiledMapServiceLayer","dijit/registry","dojo/parser",
+                    "dojox/image/ThumbnailPicker", "esri/map","esri/tasks/RelationshipQuery",
+                    "dojo/data/ItemFileReadStore","dijit/form/Button", "dijit/layout/BorderContainer",
+                      "esri/dijit/BasemapGallery","esri/layers/osm"
+                ],
+                function(on,dom,domConstruct, domClass,InfoWindow,InfoTemplate,ContentPane,TabContainer,FeatureLayer,
+                        PictureMarkerSymbol,ArcGISTiledMapServiceLayer,registry,parser,
+                         ThumbnailPicker,Map,RelationshipQuery,ItemFileReadStore,Button,BorderContainer,BasemapGallery,osm) {
+                   // parser.parse();
+
+                    var map, basemapGallery,fLayer,subID,substationImage;
+                    var imageNameList=new Array();
+                    var relatedQuery = new RelationshipQuery();
+                    relatedQuery.outFields = ["*"];
+                    relatedQuery.relationshipId = 0;
+
+                    function testGraphic(){
+                        //console.log(map.graphics.length);
+                        on(dom.byId("sImageBtn"),"click",function(){
+                        alert("show image");
+                    })
+
+                        console.log(fLayer.graphics.length);// Modules required:
+// esri/symbols/PictureMarkerSymbol
+
+                        var marker = new PictureMarkerSymbol();
+                        marker.setAngle(0);
+                        marker.setHeight(20);
+                        marker.setWidth(20);
+                        marker.setUrl("http://img3.wikia.nocookie.net/__cb20140427224234/caramelangel714/images/7/72/Location_Icon.png");
+                       for(var i=0;i<100;i++){
+                            fLayer.graphics[i].setSymbol(marker);
+                     }
+                        fLayer.reDraw();
+                    }
+                    function init() {
+                       on( dom.byId("test"),"click",testGraphic);
+                        var infoWindow = new InfoWindow(null, domConstruct.create("div"));
+                        infoWindow.startup();
+
+                        map = new  Map("map", {
+                            center: [126.61, 45.68],
+                            zoom: 15,
+                            minZoom: 3,
+                            maxZoom: 29,
+                            infoWindow: infoWindow,
+                            showLabels : true
+                        });
+                    //    var backgroundLayer=new ArcGISTiledMapServiceLayer("http://10.50.51.67:6080/arcgis/rest/services/test/hrbBuildingBackground_2016/MapServer");
+                    //    map.addLayer(backgroundLayer);
+
+
+                        var serviceURL = "http://10.50.51.67:6080/arcgis/rest/services/test/hrbSubstation_image/MapServer/0";
+
+
+
+                        var template = new  InfoTemplate();
+
+                        var fLayerOptions = {
+                            mode: FeatureLayer.MODE_SNAPSHOT,
+                            outFields: ["LABEL", "REFCOD","OBJECTID"],
+                            infoTemplate: template
+                        };
+                         fLayer = new FeatureLayer(serviceURL, fLayerOptions);
+                        map.addLayer(fLayer);
+                     //  console.log( fLayer.graphics.count);
+                        map.infoWindow.resize(275, 275);
+                        fLayer.on("click", function(evt)
+                        {
+                            template.setTitle(getTitle);
+
+                            template.setContent(getWindowContent);
+                            console.log("some graphic are clicked");
+
+
+                        });
+                       map.on("load",function(evt){
+                            console.log(fLayer.graphics.length);
+                           console.log(map.graphics.length)
+                        })
+
+                        createBasemapGallery();
+                    }
+
+                    function createBasemapGallery() {
+
+
+                        //first get a list of the basemaps to set to a dojo store
+                        var items=[];
+                        items.push({thumbnailUrl:"http://www.arcgis.com/sharing/rest/content/items/0c539fdb47d34b17bd1452f6b9f49e97/info/thumbnail/cn_english.jpg",
+                            id: 1, title: "test1"});
+                        items.push({thumbnailUrl:"http://www.arcgis.com/sharing/rest/content/items/74e992f4fce3450aaf57a9a0df0007c3/info/thumbnail/cn_canvas.jpg",
+                            id:2,title:"test2"});
+                        ({thumbnailUrl:"http://www.arcgis.com/sharing/rest/content/items/3506596a8ac241c1a684c3305e69693a/info/thumbnail/ago_downloaded.png",
+                            id:3,title:"test3"});
+                        items.push({thumbnailUrl:"http://www.arcgis.com/sharing/rest/content/items/23fe7e8317ba4331b6ca72bf2a8eddb6/info/thumbnail/_E5_BE_AE_E5_8D_9A_E6_A1_8C_E9_9D_A2_E6_88_AA_E5_9B_BE_20130828171658.jpg                                ",
+                            id:4,title:"test4"});
+                        items.push({thumbnailUrl:"http://www.arcgis.com/sharing/rest/content/items/bf024b8d0b4b48f5a486070214e87c5f/info/thumbnail/ago_downloaded.png",
+                            id:5,title:"test5"});
+                        items.push({thumbnailUrl:"http://www.arcgis.com/sharing/rest/content/items/5cd32b831bfb43d08e5ee75e7b40d53d/info/thumbnail/ago_downloaded.png",
+                            id:6,title:"test6"});
+                        var data = {
+                            identifier: "id",
+                            items: items
+                        };
+                        var itemRequest = {
+                            query: {},
+                            start: 0,
+                            count: 4
+                        };
+                        var itemNameMap = {
+                            imageThumbAttr: "thumbnailUrl",
+                            titleAttr: "title"
+                        };
+                        var store = new  ItemFileReadStore({data: data});
+
+                        //Populate the dojo thumbnail picker with the basemaps
+                        var thumbPicker = registry.byId('thumbPickerDiv');
+                        thumbPicker.setDataStore(store, itemRequest, itemNameMap);
+                        dojo.subscribe(thumbPicker.getClickTopicName(), function (info) {
+                            //when you click a thumbnail in the gallery - switch the basemap to the selected item.
+
+                        });
+
+                    }
+                    function getTitle(graphic){
+                       // subIDgraphic.attributes.REFCOD;
+
+                        return graphic.attributes.LABEL;
+
+                    }
+
+                    function showImage(){
+                        alert("hello");
+                    }
+                    function getWindowContent(graphic) {
+                        // Make a tab container.
+                        relatedQuery.objectIds = [graphic.attributes.OBJECTID];
+                        fLayer.queryRelatedFeatures(relatedQuery, function(relatedRecords) {
+                            var fset = relatedRecords[graphic.attributes.OBJECTID];
+                            var count = (fset) ? fset.features.length : 0;
+                            if(fset.features.length==1)
+                                imageNameList=(fset.features[0].attributes.imageNameList).split(";");
+                            console.log(imageNameList.length);
+                        /*    content = content + "<br><hr><br><i><span id='numPeople'>" + count +
+                                    "</span> people think this is important.</i>";
+                            content = content + "<br><br><img style='cursor:pointer' src='images/thumbsup.jpeg'  onclick='voteOnIncident(" + graphicAttributes.objectid + ");'>";
+                            map.infoWindow.setTitle(title);
+                            map.infoWindow.setContent(content);
+                            map.infoWindow.show(evt.screenPoint, map.getInfoWindowAnchor(evt.screenPoint));
+                            */
+                        });
+                        var tc = new TabContainer({
+
+                        }, domConstruct.create("div"));
+
+                        // Display attribute information.
+                        var cp1 = new ContentPane({
+                            title: "换热站",
+                            content: "<table width='99%' border='0' cellspacing='0' cellpadding='0' style='border-collapse:collapse;' >" +
+                            "<tr style='border:1px solid ;'><td   style='border:1px solid ;'>SubstationName:</td><td>"+
+                            graphic.attributes.LABEL+"</td></tr>"+
+                            "<tr style='border:1px solid ;height:25px;'><td   style='border:1px solid ;'>stationCode:</td><td> "
+                            + graphic.attributes.REFCOD +"</td></tr></table>"+
+                                   "<a href='#' id='sImageBtn' onclick='javascript:showImage'>图片</a>"
+
+                        });                        // Display a dojo pie chart for the male/female percentage.
+
+
+                        var cp2 = new ContentPane({
+                            title: "阀门"
+                        });
+                        var cp3=new ContentPane({
+                            title: "补偿器"
+                        });
+
+                        tc.addChild(cp1);
+                        tc.addChild(cp2);
+                        tc.addChild(cp3);
+                         return tc.domNode;
+                    }
+                   dojo.ready(init);
+                });
+    </script>
+
+</head>
+<body class="claro">
+<div id="dj123" dojotype="dijit/layout/BorderContainer" design="headline" gutters="false" style="width:100%;height:100%;margin:0;">
+    <div id="map" dojotype="dijit/layout/ContentPane" region="center" style="border:1px solid #000;">
+        <div style="position:absolute; right:75px; top:100px; z-Index:99;">
+            <div id="thumbPickerDiv" dojoType="dojox/image/ThumbnailPicker"   data-dojo-props="size:500,numberThumbs:4, useHyperlink:true,
+hyperlinkTarget:this"></div>
+        </div>
+    </div>
+</div>
+<button id="test">测试graphic</button>
+</body>
+</html>

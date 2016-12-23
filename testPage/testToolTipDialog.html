@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html >
+<head>
+
+    <link rel="stylesheet"  href="http://localhost/arcgis_js_api/library/3.14/3.14/dijit/themes/claro/claro.css">
+
+    <script>dojoConfig = {parseOnLoad: true}</script>
+    <script src="http://localhost/arcgis_js_api/library/3.14/3.14/init.js" data-dojo-config="isDebug: 1, async: 1, parseOnLoad: 1" charset="utf-8"></script>
+
+    <script>
+        require([
+            "dojo/parser",
+            "dijit/TooltipDialog",
+            "dijit/popup",
+            "dojo/on",
+            "dojo/dom",
+            "dojo/_base/lang",
+             "dojo/mouse",
+            "dijit/Tooltip",
+            "dojox/charting/Chart",
+            "dojox/charting/axis2d/Default",
+            "dojox/charting/plot2d/Lines",
+            "dojo/domReady!"
+        ], function(parser,TooltipDialog, popup, on, dom,lang,mouse,Tooltip,Chart, Default, Lines){
+            parser.parse();
+            var myTooltipDialog = new TooltipDialog({
+                id: 'myTooltipDialog',
+                style: "width: 300px;",
+                content: "<p>I have a mouse leave event handler that will close the dialog.",
+                onMouseLeave: function(){
+                    popup.close(myTooltipDialog);
+                }
+            });
+            on(dom.byId("ttt"),mouse.enter,lang.hitch(this,function(e){
+
+                console.log("on title mouse over");
+            }));
+
+
+
+           function updateCurve(){
+
+               var chart1 = new Chart("chart1");
+               chart1.addPlot("default", {type: Lines});
+               chart1.addAxis("x");
+               chart1.addAxis("y", {vertical: true});
+               chart1.addSeries("Series 1", [1, 2, 2, 3, 4, 5, 5, 7]);
+               chart1.render();
+      //         tp.set("label","hello");
+           };
+            function getValue(){
+                   console.log("here");
+            };
+
+
+        });
+    </script>
+</head>
+<body class="claro">
+<p>
+<span id="thenode">Move the mouse over me to pop up the dialog.</span><br>
+
+</p>
+<p>
+  <div id="ttt"  >  tttt</div>, CBE (born 10 January 1945) is a British singer-songwriter and musician, born and raised in <span id="londonTip" class="rodTip">North London, England</span> and currently residing in Epping. He is of Scottish and English lineage.
+</p>
+<script>
+    require([
+        "dojo/parser",
+        "dijit/TooltipDialog",
+        "dijit/popup",
+        "dojo/on",
+        "dojo/dom",
+        "dojo/_base/lang",
+        "dojo/mouse",
+        "dijit/Tooltip",
+        "dojox/charting/Chart",
+        "dojox/charting/axis2d/Default",
+        "dojox/charting/plot2d/Lines",
+        "dojo/domReady!"
+    ], function(parser,TooltipDialog, popup, on, dom,lang,mouse,Tooltip,Chart, Default, Lines){
+        parser.parse();
+    function getValue(){
+        console.log("here");
+    };
+    var tp= new Tooltip({
+        connectId: ["thenode"],
+        label: "ssss"
+    });
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+<div class="LoanInput">
+    <div>Loan Amount: <input type="text"
+                             data-dojo-type="dijit.form.CurrencyTextBox"
+                             data-dojo-props="currency: 'USD'"
+                             data-dojo-attach-point="amount"
+                             data-dojo-attach-event="onChange: calculate"></div>
+    <div>Interest Rate: <input data-dojo-type="dijit.form.NumberSpinner"
+                               data-dojo-props="value:5,
+smallDelta:0.05,
+intermediateChanges:true,
+constraints:{min: 0}"
+                               data-dojo-attach-point="rate"
+                               data-dojo-attach-event="onChange: calculate">
+    </div>
+    <div>Term (years): <select name="select"
+                               data-dojo-type="dijit.form.ComboBox"
+                               data-dojo-props="autocomplete:false"
+                               data-dojo-attach-point ="term"
+                               data-dojo-attach-event="onChange: calculate">
+        <option>1</option>
+        <option>2</option>
+        <option>3</option>
+        <option>4</option>
+        <option>5</option>
+        <option>10</option>
+        <option selected="selected">15</option>
+        <option>30</option>
+    </select>
+    </div>
+</div>

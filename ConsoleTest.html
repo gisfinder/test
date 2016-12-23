@@ -1,0 +1,151 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+
+    <title>模块与包</title>
+
+
+    <link rel="stylesheet"  href="http://localhost/arcgis_js_api/library/3.14/3.14/dijit/themes/claro/claro.css">
+    <script>
+        var dojoConfig = {
+           // baseUrl: "js/",
+            packages: [{
+                name: "app",
+                location: "/test"
+            }]
+
+        };
+    </script>
+ <!-- <script type="text/javascript"  data-dojo-config="async: true"   src="http://localhost/arcgis_js_api/library/3.14/3.14/init.js"></script>  -->
+
+
+</head>
+<body class="tundra">
+<script src="http://localhost/arcgis_js_api/library/3.14/3.14/init.js" data-dojo-config="isDebug: 1, async: 1, parseOnLoad: 1"></script>
+
+<p>
+    这是一用于基于控制台开发测试的文件。
+<div data-dojo-type="dijit/TitlePane" id="test1" title="hello">
+    <div data-dojo-type="app/js/Test">测试</div>
+</div>
+</p>
+<button   id="mybutton"  >点击啊</button>
+<script>
+    require([ "dojo/store/Memory","dijit/registry",  "dojo/parser","app/js/Test", "dojo/ready"], function (Memory,registry,parser,Test,ready) {
+        ready(300,function() {
+     //    parser.parse();
+            //   var filterText = registry.byId("test");
+            var test = new Test();
+            console.log("t1");
+            //      parser.parse();
+            //     var t=  registry.byId("fruit");
+
+
+            //      t.set("store",stateStore);
+            //      t.set("searchAtt","name");
+            //      t.startup();
+        });
+        //  alert("hello");
+        //   var sub=new Substation();
+        //  /sub.startup();
+
+
+        //    test.startup();
+        /*   var shape = new Shape();
+         shape.setColor(0x0000FF);
+         console.log("形状的颜色为：" + shape.color);
+         */
+
+    });
+</script>
+<script>
+    require(["dojo/aspect","dojo/on","dojo/dom", "dojo/store/Memory","dijit/registry",  "dojo/parser"],function(aspect,on,dom,Memory,registry,parser){
+       parser.parse();
+        var clicked=false;
+        console.log("here");
+        var myButton=dom.byId("mybutton");
+        var myTitlePane=registry.byId("test1");
+
+        on(myButton, "click", function(e) {
+
+            var t=registry.byId("fruit");
+            var myTitlePane=registry.byId("test1");
+            var subStationList = new Memory();
+
+
+
+           aspect.after(myTitlePane, "toggle", function() {
+               if( clicked!=true){
+                   subStationList.setData(initialize());
+                   t.set("store",subStationList);
+                   t.set("searchAtt","LABEL");
+                   t.set("value","");
+                 //  initialize();
+                   clicked=true;
+               }
+               else
+                //   initialize();
+               clicked=true;
+
+            });
+
+            var stateStore = new Memory({
+                data: [
+                    {name:"Alabama", id:"AL"},
+                    {name:"Alaska", id:"AK"},
+                    {name:"American Samoa", id:"AS"},
+                    {name:"Arizona", id:"AZ"},
+                    {name:"Arkansas", id:"AR"},
+                    {name:"Armed Forces Europe", id:"AE"},
+                    {name:"Armed Forces Pacific", id:"AP"},
+                    {name:"Armed Forces the Americas", id:"AA"},
+                    {name:"California", id:"CA"},
+                    {name:"Colorado", id:"CO"},
+                    {name:"Connecticut", id:"CT"},
+                    {name:"Delaware", id:"DE"}
+                ]
+            });
+          //  var dArray=new Array();
+         //   dArray.push({name:"1", id:"1"});
+        //    dArray.push({name:"2", id:"2"});
+          //  stateStore.setData(dArray);
+       //  t.set("store",stateStore);
+         //   t.set("searchAtt","name");
+         //   t.set("value","");
+        });
+
+
+    });
+</script>
+<script>
+    function testE(){
+        alert("test");
+
+    }
+</script>
+<script>
+    function initialize()
+    {
+        require(["esri/request","esri/config"], function (esriRequest,esriConfig) {
+            var layerUrl = "http://10.50.51.67:6080/arcgis/rest/services/hrb/hrbPipe_2015/MapServer/8/query?where=1%3D1&outFields=OBJECTID%2CREFCOD%2CLABEL&returnGeometry=false&returnIdsOnly=false&orderByFields=REFCOD&returnZ=false&returnM=false&f=json";
+            esriConfig.defaults.io.corsEnabledServers.push("10.50.51.67");
+            esriConfig.defaults.io.corsDetection = false;
+            var layersRequest = esriRequest({
+                url: layerUrl,
+                content: {f: "json"},
+                handleAs: "json",
+                callbackParamName: "callback"
+            });
+            layersRequest.then(
+                    function (response) {
+                        console.log("Success: ", response.features[0].attributes.LABEL);
+                        return response.features;
+                    }, function (error) {
+                        console.log("Error: ", error.message);
+                    });
+        })
+    }
+</script>
+</body>
+</html>

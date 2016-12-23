@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+
+    <title>模块与包</title>
+
+
+    <link rel="stylesheet"  href="http://localhost/arcgis_js_api/library/3.14/3.14/dijit/themes/claro/claro.css">
+    <script>
+        var dojoConfig = {
+            // baseUrl: "js/",
+            packages: [{
+                name: "app",
+                location: "/test"
+            }]
+
+        };
+    </script>
+    <!-- <script type="text/javascript"  data-dojo-config="async: true"   src="http://localhost/arcgis_js_api/library/3.14/3.14/init.js"></script>  -->
+
+
+</head>
+<body class="tundra">
+<script src="http://localhost/arcgis_js_api/library/3.14/3.14/init.js" data-dojo-config="isDebug: 1, async: 1, parseOnLoad: 1"></script>
+<script>
+    require([ "dojo/store/Memory","dijit/registry",  "dojo/parser","app/js/Test", "dojo/ready"], function (Memory,registry,parser,Test,ready) {
+        ready(function() {
+
+            //   var filterText = registry.byId("test");
+            var test = new Test();
+            console.log("t1");
+            parser.parse();
+            //      parser.parse();
+            //     var t=  registry.byId("fruit");
+
+
+            //      t.set("store",stateStore);
+            //      t.set("searchAtt","name");
+            //      t.startup();
+        });
+        //  alert("hello");
+        //   var sub=new Substation();
+        //  /sub.startup();
+
+
+        //    test.startup();
+        /*   var shape = new Shape();
+         shape.setColor(0x0000FF);
+         console.log("形状的颜色为：" + shape.color);
+         */
+
+    });
+</script>
+<p>
+    这是一用于基于控制台开发测试的文件。
+<div data-dojo-type="dijit/TitlePane" id="test1" title="hello">
+    <div data-dojo-type="app/js/Test">测试</div>
+</div>
+</p>
+ </body>
+</html>
